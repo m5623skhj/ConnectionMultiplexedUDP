@@ -127,7 +127,20 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="IOProcessor.cpp" />
+    <ClCompile Include="IProcessorBase.h" />
+    <ClCompile Include="LogicProcessor.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="ProcessorManager.cpp" />
+    <ClCompile Include="ServerCore.cpp" />
+    <ClCompile Include="SessionLookupTable.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="IOProcessor.h" />
+    <ClInclude Include="LogicProcessor.h" />
+    <ClInclude Include="ProcessorManager.h" />
+    <ClInclude Include="ServerCore.h" />
+    <ClInclude Include="SessionLookupTable.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

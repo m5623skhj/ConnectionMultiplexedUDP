@@ -5,18 +5,55 @@
       <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
       <Extensions>cpp;c;cc;cxx;c++;cppm;ixx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
     </Filter>
-    <Filter Include="헤더 파일">
-      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
-      <Extensions>h;hh;hpp;hxx;h++;hm;inl;inc;ipp;xsd</Extensions>
-    </Filter>
     <Filter Include="리소스 파일">
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
+    <Filter Include="소스 파일\Core">
+      <UniqueIdentifier>{1f049403-33c4-4776-a12d-9280f6c14d69}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="소스 파일\Core\Processor">
+      <UniqueIdentifier>{2c4bf715-9b1f-4009-9430-589a6e05a036}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="ServerCore.cpp">
+      <Filter>소스 파일\Core</Filter>
+    </ClCompile>
+    <ClCompile Include="IOProcessor.cpp">
+      <Filter>소스 파일\Core\Processor</Filter>
+    </ClCompile>
+    <ClCompile Include="LogicProcessor.cpp">
+      <Filter>소스 파일\Core\Processor</Filter>
+    </ClCompile>
+    <ClCompile Include="ProcessorManager.cpp">
+      <Filter>소스 파일\Core\Processor</Filter>
+    </ClCompile>
+    <ClCompile Include="SessionLookupTable.cpp">
+      <Filter>소스 파일\Core</Filter>
+    </ClCompile>
     <ClCompile Include="main.cpp">
       <Filter>소스 파일</Filter>
     </ClCompile>
+    <ClCompile Include="IProcessorBase.h">
+      <Filter>소스 파일\Core\Processor</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="ServerCore.h">
+      <Filter>소스 파일\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="SessionLookupTable.h">
+      <Filter>소스 파일\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="IOProcessor.h">
+      <Filter>소스 파일\Core\Processor</Filter>
+    </ClInclude>
+    <ClInclude Include="LogicProcessor.h">
+      <Filter>소스 파일\Core\Processor</Filter>
+    </ClInclude>
+    <ClInclude Include="ProcessorManager.h">
+      <Filter>소스 파일\Core\Processor</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

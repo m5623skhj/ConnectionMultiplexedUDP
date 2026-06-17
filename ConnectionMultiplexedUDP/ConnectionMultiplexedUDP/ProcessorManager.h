@@ -2,14 +2,7 @@
 #include "IProcessorBase.h"
 #include <array>
 #include <vector>
-
-enum class EProcessorType : uint8_t
-{
-	IO,
-	Logic,
-	
-	Max,
-};
+#include "ProcessorType.h"
 
 class ProcessorManager
 {

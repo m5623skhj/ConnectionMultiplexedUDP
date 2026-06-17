@@ -127,6 +127,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="Client.cpp" />
     <ClCompile Include="IOProcessor.cpp" />
     <ClCompile Include="IProcessorBase.cpp" />
     <ClCompile Include="IProcessorBase.h" />
@@ -137,9 +138,11 @@
     <ClCompile Include="SessionLookupTable.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Client.h" />
     <ClInclude Include="IOProcessor.h" />
     <ClInclude Include="LogicProcessor.h" />
     <ClInclude Include="ProcessorManager.h" />
+    <ClInclude Include="ProcessorType.h" />
     <ClInclude Include="ServerCore.h" />
     <ClInclude Include="SessionLookupTable.h" />
   </ItemGroup>

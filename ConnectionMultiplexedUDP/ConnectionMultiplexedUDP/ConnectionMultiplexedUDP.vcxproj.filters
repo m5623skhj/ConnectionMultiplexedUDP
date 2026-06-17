@@ -15,6 +15,9 @@
     <Filter Include="소스 파일\Core\Processor">
       <UniqueIdentifier>{2c4bf715-9b1f-4009-9430-589a6e05a036}</UniqueIdentifier>
     </Filter>
+    <Filter Include="소스 파일\Core\Client">
+      <UniqueIdentifier>{74354a99-956e-40e9-8270-daf032f423f4}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="ServerCore.cpp">
@@ -39,7 +42,10 @@
       <Filter>소스 파일\Core\Processor</Filter>
     </ClCompile>
     <ClCompile Include="IProcessorBase.cpp">
-      <Filter>소스 파일</Filter>
+      <Filter>소스 파일\Core\Processor</Filter>
+    </ClCompile>
+    <ClCompile Include="Client.cpp">
+      <Filter>소스 파일\Core\Client</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -56,6 +62,12 @@
       <Filter>소스 파일\Core\Processor</Filter>
     </ClInclude>
     <ClInclude Include="ProcessorManager.h">
+      <Filter>소스 파일\Core\Processor</Filter>
+    </ClInclude>
+    <ClInclude Include="Client.h">
+      <Filter>소스 파일\Core\Client</Filter>
+    </ClInclude>
+    <ClInclude Include="ProcessorType.h">
       <Filter>소스 파일\Core\Processor</Filter>
     </ClInclude>
   </ItemGroup>

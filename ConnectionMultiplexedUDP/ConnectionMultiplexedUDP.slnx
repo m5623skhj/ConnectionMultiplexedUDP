@@ -3,5 +3,5 @@
     <Platform Name="x64" />
     <Platform Name="x86" />
   </Configurations>
-  <Project Path="ConnectionMultiplexedUDP/ConnectionMultiplexedUDP.vcxproj" />
+  <Project Path="ConnectionMultiplexedUDP/ConnectionMultiplexedUDP.vcxproj" Id="0097a1f9-243f-4860-9065-fb42b5d18323" />
 </Solution>

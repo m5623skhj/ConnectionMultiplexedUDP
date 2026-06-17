@@ -32,5 +32,13 @@ bool ProcessorManager::Start()
 
 bool ProcessorManager::Stop()
 {
+	for (auto& processorGroup : processorGroup)
+	{
+		for (auto& processor : processorGroup)
+		{
+			processor->Stop();
+		}
+	}
+
 	return true;
 }

@@ -14,6 +14,9 @@ public:
 	void Stop() override;
 
 private:
+	void RunIOThread();
+
+private:
 	SessionLookupTable sessionLookupTable;
 	SOCKET socket;
 };

@@ -12,4 +12,7 @@ public:
 	void Stop() override;
 
 private:
+	void RunLogicThread();
+
+private:
 };

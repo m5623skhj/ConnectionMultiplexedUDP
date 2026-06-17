@@ -20,7 +20,7 @@ public:
 
 public:
 	bool Start();
-	bool Stop();
+	void Stop();
 
 private:
 	int ioProcessorCount;

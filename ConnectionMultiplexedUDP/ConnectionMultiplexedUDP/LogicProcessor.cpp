@@ -8,21 +8,15 @@ LogicProcessor::~LogicProcessor()
 {
 }
 
-bool LogicProcessor::Start()
+bool LogicProcessor::StartImpl()
 {
-	if (not ProcessorBase::Start())
-	{
-		return false;
-	}
-
 	processorThread = std::jthread(&LogicProcessor::RunLogicThread, this);
 
 	return true;
 }
 
-void LogicProcessor::Stop()
+void LogicProcessor::StopImpl()
 {
-	ProcessorBase::Stop();
 }
 
 void LogicProcessor::RunLogicThread()

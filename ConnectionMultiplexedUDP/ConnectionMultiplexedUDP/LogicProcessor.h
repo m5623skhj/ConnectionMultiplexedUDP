@@ -8,8 +8,8 @@ public:
 	~LogicProcessor();
 
 public:
-	bool Start() override;
-	void Stop() override;
+	bool StartImpl() override;
+	void StopImpl() override;
 
 private:
 	void RunLogicThread();

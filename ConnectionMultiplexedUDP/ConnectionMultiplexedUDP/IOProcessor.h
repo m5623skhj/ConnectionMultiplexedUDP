@@ -10,8 +10,8 @@ public:
 	~IOProcessor();
 
 public:
-	bool Start() override;
-	void Stop() override;
+	bool StartImpl() override;
+	void StopImpl() override;
 
 public:
 	bool SendPacket(const sockaddr_in& destAddr, const char* data, int dataSize);

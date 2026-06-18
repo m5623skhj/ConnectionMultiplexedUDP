@@ -2,6 +2,11 @@
 
 bool ProcessorBase::Start()
 {
+    if (not StartImpl())
+    {
+        return false;
+	}
+
     processTaskThread = std::jthread(&ProcessorBase::RunProcessTaskThread, this);
 
     return true;
@@ -9,7 +14,12 @@ bool ProcessorBase::Start()
 
 void ProcessorBase::Stop()
 {
-	needStop.store(true);
+    if (needStop.exchange(true))
+    {
+        return;
+    }
+
+	StopImpl();
 
 	if (processorThread.joinable())
 	{
@@ -25,7 +35,7 @@ void ProcessorBase::Stop()
 
 void ProcessorBase::PushTaskToProcessor(std::unique_ptr<ProcessorTask>&& task)
 {
-	if (needStop.load())
+    if (needStop.load())
     {
         return;
     }

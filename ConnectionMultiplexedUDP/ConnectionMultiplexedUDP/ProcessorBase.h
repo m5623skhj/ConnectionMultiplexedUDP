@@ -15,8 +15,12 @@ public:
 	virtual ~ProcessorBase() = default;
 
 public:
-	virtual bool Start();
-	virtual void Stop();
+	virtual bool Start() final;
+	virtual void Stop() final;
+
+private:
+	virtual bool StartImpl() = 0;
+	virtual void StopImpl() = 0;
 
 public:
 	void PushTaskToProcessor(std::unique_ptr<ProcessorTask>&& task);

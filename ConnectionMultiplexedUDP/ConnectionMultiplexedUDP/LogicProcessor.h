@@ -1,7 +1,7 @@
 #pragma once
-#include "IProcessorBase.h"
+#include "ProcessorBase.h"
 
-class LogicProcessor : public IProcessorBase
+class LogicProcessor : public ProcessorBase
 {
 public:
 	LogicProcessor();
@@ -13,6 +13,7 @@ public:
 
 private:
 	void RunLogicThread();
+	void ProcessTask(std::unique_ptr<ProcessorTask>&& task) override;
 
 private:
 };

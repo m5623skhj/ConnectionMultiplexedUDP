@@ -130,8 +130,8 @@
   <ItemGroup>
     <ClCompile Include="Client.cpp" />
     <ClCompile Include="IOProcessor.cpp" />
-    <ClCompile Include="IProcessorBase.cpp" />
-    <ClCompile Include="IProcessorBase.h" />
+    <ClCompile Include="ProcessorBase.cpp" />
+    <ClCompile Include="ProcessorBase.h" />
     <ClCompile Include="LogicProcessor.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="ProcessorManager.cpp" />

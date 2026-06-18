@@ -10,6 +10,11 @@ LogicProcessor::~LogicProcessor()
 
 bool LogicProcessor::Start()
 {
+	if (not ProcessorBase::Start())
+	{
+		return false;
+	}
+
 	processorThread = std::jthread(&LogicProcessor::RunLogicThread, this);
 
 	return true;
@@ -17,12 +22,13 @@ bool LogicProcessor::Start()
 
 void LogicProcessor::Stop()
 {
-	if (processorThread.joinable())
-	{
-		processorThread.request_stop();
-	}
+	ProcessorBase::Stop();
 }
 
 void LogicProcessor::RunLogicThread()
+{
+}
+
+void LogicProcessor::ProcessTask(std::unique_ptr<ProcessorTask>&& task)
 {
 }

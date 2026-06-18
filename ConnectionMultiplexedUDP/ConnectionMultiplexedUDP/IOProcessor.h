@@ -1,10 +1,9 @@
 #pragma once
-#include "IProcessorBase.h"
+#include "ProcessorBase.h"
 #include "SessionLookupTable.h"
-#include <atomic>
 #include <winsock2.h>
 
-class IOProcessor : public IProcessorBase
+class IOProcessor : public ProcessorBase
 {
 public:
 	IOProcessor();
@@ -19,11 +18,11 @@ public:
 
 private:
 	void RunRecvThread();
+	void ProcessTask(std::unique_ptr<ProcessorTask>&& task) override;
 
 private:
 	SessionLookupTable sessionLookupTable;
 	
 	SOCKET recvSocket;
 	SOCKET sendSocket;
-	std::atomic_bool needStop = false;
 };

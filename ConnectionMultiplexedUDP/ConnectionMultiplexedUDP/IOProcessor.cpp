@@ -13,11 +13,18 @@ IOProcessor::~IOProcessor()
 
 bool IOProcessor::Start()
 {
+	if (not ProcessorBase::Start())
+    {
+        return false;
+    }
+
 	recvSocket = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
 	sendSocket = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
 	if (recvSocket == INVALID_SOCKET || sendSocket == INVALID_SOCKET)
 	{
 		std::cout << "socket failed with error: " << WSAGetLastError() << std::endl;
+		ProcessorBase::Stop();
+
 		return false;
 	}
 
@@ -41,6 +48,8 @@ void IOProcessor::Stop()
         closesocket(sendSocket);
         sendSocket = INVALID_SOCKET;
 	}
+
+    ProcessorBase::Stop();
 }
 
 bool IOProcessor::SendPacket(const sockaddr_in& destAddr, const char* data, int dataSize)
@@ -88,4 +97,8 @@ void IOProcessor::RunRecvThread()
 
         //ProcessPacket(recvBuffer.data(), ret, addr);
     }
+}
+
+void IOProcessor::ProcessTask(std::unique_ptr<ProcessorTask>&& task)
+{
 }

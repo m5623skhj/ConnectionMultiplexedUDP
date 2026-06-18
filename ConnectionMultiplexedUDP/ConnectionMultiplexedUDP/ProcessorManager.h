@@ -1,5 +1,5 @@
 #pragma once
-#include "IProcessorBase.h"
+#include "ProcessorBase.h"
 #include <array>
 #include <vector>
 #include "ProcessorType.h"
@@ -20,5 +20,5 @@ private:
 	int logicProcessorCount;
 	
 private:
-	std::array<std::vector<IProcessorBase*>, static_cast<size_t>(EProcessorType::Max)> processorGroup;
+	std::array<std::vector<std::unique_ptr<ProcessorBase>>, static_cast<size_t>(EProcessorType::Max)> processorGroup;
 };

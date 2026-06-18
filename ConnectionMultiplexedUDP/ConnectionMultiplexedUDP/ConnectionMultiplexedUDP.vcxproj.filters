@@ -38,10 +38,10 @@
     <ClCompile Include="main.cpp">
       <Filter>소스 파일</Filter>
     </ClCompile>
-    <ClCompile Include="IProcessorBase.h">
+    <ClCompile Include="ProcessorBase.h">
       <Filter>소스 파일\Core\Processor</Filter>
     </ClCompile>
-    <ClCompile Include="IProcessorBase.cpp">
+    <ClCompile Include="ProcessorBase.cpp">
       <Filter>소스 파일\Core\Processor</Filter>
     </ClCompile>
     <ClCompile Include="Client.cpp">

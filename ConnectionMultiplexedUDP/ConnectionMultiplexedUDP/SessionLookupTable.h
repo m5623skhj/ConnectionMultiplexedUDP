@@ -5,6 +5,7 @@
 #include <vector>
 
 using ConnectionId = uint64_t;
+inline constexpr ConnectionId InvalidConnectionId = 0;
 
 class Session;
 

@@ -15,6 +15,11 @@ SessionLookupTable::~SessionLookupTable()
 
 ConnectionId SessionLookupTable::Allocate(Session* session)
 {
+	if (freeIndices.empty())
+	{
+		return InvalidConnectionId;
+	}
+
 	const uint32_t index = freeIndices.front();
 	freeIndices.pop();
 

@@ -15,6 +15,12 @@ public:
 	bool Start();
 	void Stop();
 
+public:
+	bool PushTaskToProcessor(const EProcessorType processorType, std::unique_ptr<ProcessorTask>&& task, const ProcessorIndex c = AnyProcessor);
+
+private:
+	ProcessorIndex GetLeastBusyProcessorIndex(const EProcessorType processorType) const;
+
 private:
 	int ioProcessorCount;
 	int logicProcessorCount;

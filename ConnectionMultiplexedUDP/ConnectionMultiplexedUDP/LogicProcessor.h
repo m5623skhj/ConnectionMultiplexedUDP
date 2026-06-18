@@ -4,7 +4,8 @@
 class LogicProcessor : public ProcessorBase
 {
 public:
-	LogicProcessor();
+	LogicProcessor() = delete;
+	explicit LogicProcessor(ProcessorManager& inProcessorManager);
 	~LogicProcessor();
 
 public:

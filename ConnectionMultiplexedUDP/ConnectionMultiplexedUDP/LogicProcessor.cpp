@@ -1,6 +1,7 @@
 #include "LogicProcessor.h"
 
-LogicProcessor::LogicProcessor()
+LogicProcessor::LogicProcessor(ProcessorManager& inProcessorManager)
+    : ProcessorBase(inProcessorManager)
 {
 }
 

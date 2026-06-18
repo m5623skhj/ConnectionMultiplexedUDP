@@ -4,6 +4,8 @@
 #include <condition_variable>
 #include <mutex>
 
+class ProcessorManager;
+
 class ProcessorTask
 {
 };
@@ -11,7 +13,8 @@ class ProcessorTask
 class ProcessorBase
 {
 public:
-	ProcessorBase() = default;
+	ProcessorBase() = delete;
+	explicit ProcessorBase(ProcessorManager& inProcessorManager);
 	virtual ~ProcessorBase() = default;
 
 public:
@@ -24,6 +27,7 @@ private:
 
 public:
 	void PushTaskToProcessor(std::unique_ptr<ProcessorTask>&& task);
+	size_t GetTaskQueueSize() const;
 
 private:
 	virtual void ProcessTask(std::unique_ptr<ProcessorTask>&& task) = 0;
@@ -33,10 +37,12 @@ protected:
 	std::jthread processorThread;
 	std::atomic_bool needStop = false;
 
+	ProcessorManager& processorManager;
+
 private:
 	std::jthread processTaskThread;
 
 	std::queue<std::unique_ptr<ProcessorTask>> taskQueue;
-	std::mutex messageQueueMutex;
+	mutable std::mutex messageQueueMutex;
 	std::condition_variable messageQueueCV;
 };

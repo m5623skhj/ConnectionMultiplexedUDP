@@ -1,5 +1,10 @@
 #include "ProcessorBase.h"
 
+ProcessorBase::ProcessorBase(ProcessorManager& inProcessorManager)
+    : processorManager(inProcessorManager)
+{
+}
+
 bool ProcessorBase::Start()
 {
     if (not StartImpl())
@@ -48,12 +53,17 @@ void ProcessorBase::PushTaskToProcessor(std::unique_ptr<ProcessorTask>&& task)
 	messageQueueCV.notify_one();
 }
 
+size_t ProcessorBase::GetTaskQueueSize() const
+{
+	std::scoped_lock lock(messageQueueMutex);
+	return taskQueue.size();
+}
+
 void ProcessorBase::RunProcessTaskThread()
 {
     while (true)
     {
         std::unique_lock lock(messageQueueMutex);
-
         messageQueueCV.wait(lock, [this]
             {
                 return not taskQueue.empty() || needStop;

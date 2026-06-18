@@ -2,8 +2,11 @@
 #include <iostream>
 #include <array>
 
-IOProcessor::IOProcessor()
-	: sessionLookupTable(1000)
+IOProcessor::IOProcessor(ProcessorManager& inProcessorManager)
+	: ProcessorBase(inProcessorManager)
+    , sessionLookupTable(1000)
+	, recvSocket(INVALID_SOCKET)
+	, sendSocket(INVALID_SOCKET)
 {
 }
 

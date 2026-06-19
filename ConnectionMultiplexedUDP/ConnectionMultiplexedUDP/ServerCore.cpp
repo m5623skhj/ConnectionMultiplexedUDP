@@ -21,8 +21,6 @@ bool ServerCore::Start()
 		return false;
 	}
 
-	return true;
-
 	if (not processorManager.Start())
 	{
 		std::cout << "ProcessorManager failed to start." << std::endl;

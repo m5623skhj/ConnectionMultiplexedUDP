@@ -5,8 +5,7 @@
 IOProcessor::IOProcessor(ProcessorManager& inProcessorManager)
 	: ProcessorBase(inProcessorManager)
     , sessionLookupTable(1000)
-	, recvSocket(INVALID_SOCKET)
-	, sendSocket(INVALID_SOCKET)
+	, sock(INVALID_SOCKET)
 {
 }
 
@@ -16,13 +15,25 @@ IOProcessor::~IOProcessor()
 
 bool IOProcessor::StartImpl()
 {
-	recvSocket = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
-	sendSocket = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
-	if (recvSocket == INVALID_SOCKET || sendSocket == INVALID_SOCKET)
+    sock = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
+	if (sock == INVALID_SOCKET)
 	{
 		std::cout << "socket failed with error: " << WSAGetLastError() << std::endl;
 		return false;
 	}
+
+    sockaddr_in addr{};
+    addr.sin_family = AF_INET;
+    addr.sin_addr.s_addr = htonl(INADDR_ANY);
+    addr.sin_port = htons(port);
+    if (bind(sock, reinterpret_cast<sockaddr*>(&addr), sizeof(addr)) == SOCKET_ERROR)
+    {
+        std::cout << "bind failed with error: "<< WSAGetLastError() << std::endl;
+        closesocket(sock);
+        sock = INVALID_SOCKET;
+
+        return false;
+    }
 
 	processorThread = std::jthread(&IOProcessor::RunRecvThread, this);
 
@@ -31,22 +42,16 @@ bool IOProcessor::StartImpl()
 
 void IOProcessor::StopImpl()
 {
-    if (recvSocket != INVALID_SOCKET)
+    if (sock != INVALID_SOCKET)
     {
-        closesocket(recvSocket);
-        recvSocket = INVALID_SOCKET;
+        closesocket(sock);
+        sock = INVALID_SOCKET;
     }
-    
-    if (sendSocket != INVALID_SOCKET)
-    {
-        closesocket(sendSocket);
-        sendSocket = INVALID_SOCKET;
-	}
 }
 
 bool IOProcessor::SendPacket(const sockaddr_in& destAddr, const char* data, int dataSize)
 {
-	int result = sendto(sendSocket, data, dataSize, 0, (const sockaddr*)&destAddr, sizeof(destAddr));
+	int result = sendto(sock, data, dataSize, 0, (const sockaddr*)&destAddr, sizeof(destAddr));
 	if (result == SOCKET_ERROR)
 	{
 		std::cout << "sendto failed with error: " << WSAGetLastError() << std::endl;
@@ -67,7 +72,7 @@ void IOProcessor::RunRecvThread()
         int addrLen = sizeof(addr);
 
         int ret = recvfrom(
-            recvSocket,
+            sock,
             recvBuffer.data(),
             static_cast<int>(recvBuffer.size()),
             0,

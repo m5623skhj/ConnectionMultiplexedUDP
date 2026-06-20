@@ -24,6 +24,6 @@ private:
 private:
 	SessionLookupTable sessionLookupTable;
 	
-	SOCKET recvSocket;
-	SOCKET sendSocket;
+	SOCKET sock;
+	short port;
 };

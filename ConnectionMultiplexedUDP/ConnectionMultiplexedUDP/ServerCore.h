@@ -6,7 +6,7 @@
 class ServerCore
 {
 public:
-	ServerCore(int inIoProcessorCount, int inLogicProcessorCount);
+	ServerCore(const int inIoProcessorCount, const int inLogicProcessorCount, const uint16_t ioProcessorPortBase);
 	~ServerCore();
 
 public:
@@ -15,4 +15,5 @@ public:
 
 private:
 	ProcessorManager processorManager;
+	bool started = false;
 };

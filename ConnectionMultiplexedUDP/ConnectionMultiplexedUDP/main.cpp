@@ -4,7 +4,7 @@
 
 int main()
 {
-	ServerCore serverCore(4, 4);
+	ServerCore serverCore(4, 4, 7777);
 	if (not serverCore.Start())
 	{
 		std::cout << "Failed to start the server." << std::endl;

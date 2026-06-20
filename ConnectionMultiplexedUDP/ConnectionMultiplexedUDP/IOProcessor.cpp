@@ -2,10 +2,11 @@
 #include <iostream>
 #include <array>
 
-IOProcessor::IOProcessor(ProcessorManager& inProcessorManager)
+IOProcessor::IOProcessor(ProcessorManager& inProcessorManager, uint16_t inPort)
 	: ProcessorBase(inProcessorManager)
     , sessionLookupTable(1000)
 	, sock(INVALID_SOCKET)
+    , port(inPort)
 {
 }
 
@@ -51,6 +52,11 @@ void IOProcessor::StopImpl()
 
 bool IOProcessor::SendPacket(const sockaddr_in& destAddr, const char* data, int dataSize)
 {
+    if (sock == INVALID_SOCKET)
+    {
+        return false;
+    }
+
 	int result = sendto(sock, data, dataSize, 0, (const sockaddr*)&destAddr, sizeof(destAddr));
 	if (result == SOCKET_ERROR)
 	{

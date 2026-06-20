@@ -2,8 +2,11 @@
 #include <winsock2.h>
 #include <iostream>
 
-ServerCore::ServerCore(int inIoProcessorCount, int inLogicProcessorCount)
-	: processorManager(inIoProcessorCount, inLogicProcessorCount)
+ServerCore::ServerCore(
+	const int inIoProcessorCount, 
+	const int inLogicProcessorCount, 
+	const uint16_t ioProcessorPortBase)
+	: processorManager(inIoProcessorCount, inLogicProcessorCount, ioProcessorPortBase)
 {
 }
 
@@ -24,12 +27,23 @@ bool ServerCore::Start()
 	if (not processorManager.Start())
 	{
 		std::cout << "ProcessorManager failed to start." << std::endl;
+		WSACleanup();
 		return false;
 	}
 
+	started = true;
 	return true;
 }
 
 void ServerCore::Stop()
 {
+	if (not started)
+	{
+		return;
+	}
+
+	processorManager.Stop();
+	WSACleanup();
+
+	started = false;
 }

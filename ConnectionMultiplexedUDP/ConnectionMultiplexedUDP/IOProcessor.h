@@ -7,7 +7,7 @@ class IOProcessor : public ProcessorBase
 {
 public:
 	IOProcessor() = delete;
-	explicit IOProcessor(ProcessorManager& inProcessorManager);
+	explicit IOProcessor(ProcessorManager& inProcessorManager, uint16_t inPort);
 	~IOProcessor();
 
 public:

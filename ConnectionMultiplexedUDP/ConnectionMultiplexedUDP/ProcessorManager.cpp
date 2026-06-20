@@ -1,13 +1,26 @@
 #include "ProcessorManager.h"
+#include "IOProcessor.h"
+#include "LogicProcessor.h"
 
 ProcessorManager::ProcessorManager(
-	int inIoProcessorCount, 
-	int inLogicProcessorCount)
+	const int inIoProcessorCount,
+	const int inLogicProcessorCount,
+	const uint16_t ioProcessorPortBase)
 	: ioProcessorCount(inIoProcessorCount)
 	, logicProcessorCount(inLogicProcessorCount)
 {
 	processorGroup[static_cast<size_t>(EProcessorType::IO)].reserve(ioProcessorCount);
 	processorGroup[static_cast<size_t>(EProcessorType::Logic)].reserve(logicProcessorCount);
+
+	for (int i = 0; i < ioProcessorCount; ++i)
+	{
+		processorGroup[static_cast<size_t>(EProcessorType::IO)].push_back(std::make_unique<IOProcessor>(*this, static_cast<uint16_t>(ioProcessorPortBase + i)));
+	}
+
+	for (int i = 0; i < logicProcessorCount; ++i)
+	{
+		processorGroup[static_cast<size_t>(EProcessorType::Logic)].push_back(std::make_unique<LogicProcessor>(*this));
+	}
 }
 
 ProcessorManager::~ProcessorManager()
@@ -80,7 +93,7 @@ ProcessorIndex ProcessorManager::GetLeastBusyProcessorIndex(const EProcessorType
 		return InvalidProcessor;
 	}
 
-	std::pair<ProcessorIndex, size_t> leastBusyProcessor{ InvalidProcessor, std::numeric_limits<size_t>::max() };
+	std::pair<ProcessorIndex, size_t> leastBusyProcessor{ InvalidProcessor, UINT64_MAX };
 	for (ProcessorIndex i = 0; i < processorGroup[static_cast<size_t>(processorType)].size(); ++i)
 	{
 		const auto& processor = processorGroup[static_cast<size_t>(processorType)][i];

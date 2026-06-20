@@ -8,7 +8,7 @@ class ProcessorManager
 {
 public:
 	ProcessorManager() = delete;
-	explicit ProcessorManager(int inIoProcessorCount, int inLogicProcessorCount);
+	explicit ProcessorManager(const int inIoProcessorCount, const int inLogicProcessorCount, const uint16_t ioProcessorPortBase);
 	~ProcessorManager();
 
 public:

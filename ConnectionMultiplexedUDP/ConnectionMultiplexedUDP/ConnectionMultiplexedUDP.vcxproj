@@ -137,6 +137,7 @@
     <ClCompile Include="ProcessorManager.cpp" />
     <ClCompile Include="ServerCore.cpp" />
     <ClCompile Include="SessionLookupTable.cpp" />
+    <ClCompile Include="TickerProcessor.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Client.h" />
@@ -146,6 +147,7 @@
     <ClInclude Include="ProcessorType.h" />
     <ClInclude Include="ServerCore.h" />
     <ClInclude Include="SessionLookupTable.h" />
+    <ClInclude Include="TickerProcessor.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

@@ -5,8 +5,15 @@
 ServerCore::ServerCore(
 	const int inIoProcessorCount, 
 	const int inLogicProcessorCount, 
-	const uint16_t ioProcessorPortBase)
-	: processorManager(inIoProcessorCount, inLogicProcessorCount, ioProcessorPortBase)
+	const uint16_t ioProcessorPortBase,
+	const int inTickMillisecond
+)
+	: processorManager(
+		inIoProcessorCount, 
+		inLogicProcessorCount, 
+		ioProcessorPortBase,
+		inTickMillisecond
+	)
 {
 }
 

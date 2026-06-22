@@ -4,6 +4,7 @@ enum class EProcessorType : uint8_t
 {
 	IO,
 	Logic,
+	TICKER,
 
 	Max,
 };

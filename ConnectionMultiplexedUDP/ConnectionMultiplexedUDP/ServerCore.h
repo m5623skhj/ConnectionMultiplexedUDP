@@ -6,7 +6,12 @@
 class ServerCore
 {
 public:
-	ServerCore(const int inIoProcessorCount, const int inLogicProcessorCount, const uint16_t ioProcessorPortBase);
+	ServerCore(
+		const int inIoProcessorCount, 
+		const int inLogicProcessorCount, 
+		const uint16_t ioProcessorPortBase,
+		const int inTickMillisecond
+	);
 	~ServerCore();
 
 public:

@@ -1,11 +1,13 @@
 #include "ProcessorManager.h"
 #include "IOProcessor.h"
 #include "LogicProcessor.h"
+#include "TickerProcessor.h"
 
 ProcessorManager::ProcessorManager(
 	const int inIoProcessorCount,
 	const int inLogicProcessorCount,
-	const uint16_t ioProcessorPortBase)
+	const uint16_t ioProcessorPortBase,
+	const int inTickMillisecond)
 	: ioProcessorCount(inIoProcessorCount)
 	, logicProcessorCount(inLogicProcessorCount)
 {
@@ -21,6 +23,9 @@ ProcessorManager::ProcessorManager(
 	{
 		processorGroup[static_cast<size_t>(EProcessorType::Logic)].push_back(std::make_unique<LogicProcessor>(*this));
 	}
+
+	// Ticker Processor must use only one
+	processorGroup[static_cast<size_t>(EProcessorType::TICKER)].push_back(std::make_unique<TickerProcessor>(*this, inTickMillisecond));
 }
 
 ProcessorManager::~ProcessorManager()

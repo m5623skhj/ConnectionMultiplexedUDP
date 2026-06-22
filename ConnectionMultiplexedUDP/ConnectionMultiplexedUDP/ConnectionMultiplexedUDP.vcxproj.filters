@@ -47,6 +47,9 @@
     <ClCompile Include="Client.cpp">
       <Filter>소스 파일\Core\Client</Filter>
     </ClCompile>
+    <ClCompile Include="TickerProcessor.cpp">
+      <Filter>소스 파일\Core\Processor</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="ServerCore.h">
@@ -68,6 +71,9 @@
       <Filter>소스 파일\Core\Client</Filter>
     </ClInclude>
     <ClInclude Include="ProcessorType.h">
+      <Filter>소스 파일\Core\Processor</Filter>
+    </ClInclude>
+    <ClInclude Include="TickerProcessor.h">
       <Filter>소스 파일\Core\Processor</Filter>
     </ClInclude>
   </ItemGroup>

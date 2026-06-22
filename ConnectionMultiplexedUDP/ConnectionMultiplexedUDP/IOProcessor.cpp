@@ -1,63 +1,96 @@
 #include "IOProcessor.h"
-#include <iostream>
+#include "ProcessorManager.h"
+#include "ReceivedPacketTask.h"
 #include <array>
+#include <iostream>
+#include <utility>
 
-IOProcessor::IOProcessor(ProcessorManager& inProcessorManager, uint16_t inPort)
+IOProcessor::IOProcessor(
+	ProcessorManager& inProcessorManager,
+	const ProcessorIndex inProcessorIndex,
+	const uint16_t inPort)
 	: ProcessorBase(inProcessorManager)
-    , sessionLookupTable(1000)
+	, sessionLookupTable(1000)
+	, processorIndex(inProcessorIndex)
 	, sock(INVALID_SOCKET)
-    , port(inPort)
+	, port(inPort)
 {
 }
 
 IOProcessor::~IOProcessor()
 {
+	Stop();
 }
 
 bool IOProcessor::StartImpl()
 {
-    sock = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
-	if (sock == INVALID_SOCKET)
+	const SOCKET newSocket = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
+	if (newSocket == INVALID_SOCKET)
 	{
 		std::cout << "socket failed with error: " << WSAGetLastError() << std::endl;
 		return false;
 	}
 
-    sockaddr_in addr{};
-    addr.sin_family = AF_INET;
-    addr.sin_addr.s_addr = htonl(INADDR_ANY);
-    addr.sin_port = htons(port);
-    if (bind(sock, reinterpret_cast<sockaddr*>(&addr), sizeof(addr)) == SOCKET_ERROR)
-    {
-        std::cout << "bind failed with error: "<< WSAGetLastError() << std::endl;
-        closesocket(sock);
-        sock = INVALID_SOCKET;
+	constexpr DWORD RECEIVE_TIMEOUT_MS = 100;
+	if (setsockopt(
+		newSocket,
+		SOL_SOCKET,
+		SO_RCVTIMEO,
+		reinterpret_cast<const char*>(&RECEIVE_TIMEOUT_MS),
+		sizeof(RECEIVE_TIMEOUT_MS)) == SOCKET_ERROR)
+	{
+		std::cout << "setsockopt failed with error: " << WSAGetLastError() << std::endl;
+		closesocket(newSocket);
+		return false;
+	}
 
-        return false;
-    }
+	sockaddr_in addr{};
+	addr.sin_family = AF_INET;
+	addr.sin_addr.s_addr = htonl(INADDR_ANY);
+	addr.sin_port = htons(port);
+	if (bind(newSocket, reinterpret_cast<sockaddr*>(&addr), sizeof(addr)) == SOCKET_ERROR)
+	{
+		std::cout << "bind failed with error: " << WSAGetLastError() << std::endl;
+		closesocket(newSocket);
+		return false;
+	}
 
-	processorThread = std::jthread(&IOProcessor::RunRecvThread, this);
+	{
+		std::scoped_lock lock(socketMutex);
+		sock = newSocket;
+	}
 
+	StartProcessorThread([this] { RunRecvThread(); });
 	return true;
 }
 
 void IOProcessor::StopImpl()
 {
-    if (sock != INVALID_SOCKET)
-    {
-        closesocket(sock);
-        sock = INVALID_SOCKET;
-    }
 }
 
-bool IOProcessor::SendPacket(const sockaddr_in& destAddr, const char* data, int dataSize)
+void IOProcessor::StopAfterProcessorThreadImpl()
 {
-    if (sock == INVALID_SOCKET)
-    {
-        return false;
-    }
+	SOCKET socketToClose = INVALID_SOCKET;
+	{
+		std::scoped_lock lock(socketMutex);
+		socketToClose = std::exchange(sock, INVALID_SOCKET);
+	}
 
-	int result = sendto(sock, data, dataSize, 0, (const sockaddr*)&destAddr, sizeof(destAddr));
+	if (socketToClose != INVALID_SOCKET)
+	{
+		closesocket(socketToClose);
+	}
+}
+
+bool IOProcessor::SendPacket(const sockaddr_in& destAddr, const char* data, const int dataSize)
+{
+	std::scoped_lock lock(socketMutex);
+	if (needStop.load() || sock == INVALID_SOCKET)
+	{
+		return false;
+	}
+
+	const int result = sendto(sock, data, dataSize, 0, reinterpret_cast<const sockaddr*>(&destAddr), sizeof(destAddr));
 	if (result == SOCKET_ERROR)
 	{
 		std::cout << "sendto failed with error: " << WSAGetLastError() << std::endl;
@@ -69,39 +102,62 @@ bool IOProcessor::SendPacket(const sockaddr_in& destAddr, const char* data, int 
 
 void IOProcessor::RunRecvThread()
 {
-    constexpr int MaxPacketSize = 4096;
-    std::array<char, MaxPacketSize> recvBuffer;
+	constexpr int MAX_PACKET_SIZE = 4096;
+	std::array<char, MAX_PACKET_SIZE> recvBuffer;
 
-    while (true)
-    {
-        sockaddr_in addr{};
-        int addrLen = sizeof(addr);
+	while (true)
+	{
+		SOCKET receiveSocket = INVALID_SOCKET;
+		{
+			std::scoped_lock lock(socketMutex);
+			receiveSocket = sock;
+		}
 
-        int ret = recvfrom(
-            sock,
-            recvBuffer.data(),
-            static_cast<int>(recvBuffer.size()),
-            0,
-            reinterpret_cast<sockaddr*>(&addr),
-            &addrLen);
+		if (receiveSocket == INVALID_SOCKET)
+		{
+			break;
+		}
 
-        if (ret == SOCKET_ERROR)
-        {
-            const int errorCode = WSAGetLastError();
+		sockaddr_in addr{};
+		int addrLen = sizeof(addr);
+		const int result = recvfrom(
+			receiveSocket,
+			recvBuffer.data(),
+			static_cast<int>(recvBuffer.size()),
+			0,
+			reinterpret_cast<sockaddr*>(&addr),
+			&addrLen);
 
-            if (needStop.load())
-            {
-                break;
-            }
+		if (result == SOCKET_ERROR)
+		{
+			const int errorCode = WSAGetLastError();
+			if (needStop.load())
+			{
+				break;
+			}
 
-            std::cout << "recvfrom failed : " << errorCode << '\n';
-            continue;
-        }
+			if (errorCode != WSAETIMEDOUT)
+			{
+				std::cout << "recvfrom failed : " << errorCode << '\n';
+			}
+			continue;
+		}
 
-        //ProcessPacket(recvBuffer.data(), ret, addr);
-    }
+		auto task = std::make_unique<ReceivedPacketTask>(
+			processorIndex,
+			addr,
+			recvBuffer.data(),
+			static_cast<size_t>(result));
+		const uint64_t endpointAffinityKey =
+			(static_cast<uint64_t>(addr.sin_addr.s_addr) << 16)
+			| static_cast<uint64_t>(addr.sin_port);
+		processorManager.PushTaskToProcessorByAffinity(
+			EProcessorType::Logic,
+			std::move(task),
+			endpointAffinityKey);
+	}
 }
 
-void IOProcessor::ProcessTask(std::unique_ptr<ProcessorTask>&& task)
+void IOProcessor::ProcessTask(std::unique_ptr<ProcessorTaskBase>&& task)
 {
 }

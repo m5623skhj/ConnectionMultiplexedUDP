@@ -1,14 +1,14 @@
 #pragma once
+#include <atomic>
+#include <cstdint>
 #include <thread>
 #include <queue>
 #include <condition_variable>
+#include <functional>
 #include <mutex>
+#include "ProcessorTaskBase.h"
 
 class ProcessorManager;
-
-class ProcessorTask
-{
-};
 
 class ProcessorBase
 {
@@ -19,30 +19,49 @@ public:
 
 public:
 	virtual bool Start() final;
-	virtual void Stop() final;
+	virtual bool Stop() final;
+	bool IsCurrentThread() const;
 
 private:
 	virtual bool StartImpl() = 0;
 	virtual void StopImpl() = 0;
+	virtual void StopAfterProcessorThreadImpl();
 
 public:
-	void PushTaskToProcessor(std::unique_ptr<ProcessorTask>&& task);
+	bool PushTaskToProcessor(std::unique_ptr<ProcessorTaskBase>&& task);
 	size_t GetTaskQueueSize() const;
 
 private:
-	virtual void ProcessTask(std::unique_ptr<ProcessorTask>&& task) = 0;
+	enum class EState : uint8_t
+	{
+		Stopped,
+		Starting,
+		Running,
+		Stopping,
+	};
+
+	virtual void ProcessTask(std::unique_ptr<ProcessorTaskBase>&& task) = 0;
+	void RunProcessorThread(std::function<void()> function);
 	void RunProcessTaskThread();
+	void StopThreads();
 
 protected:
+	void StartProcessorThread(std::function<void()> inFunction);
+
 	std::jthread processorThread;
 	std::atomic_bool needStop = false;
 
 	ProcessorManager& processorManager;
 
 private:
+	std::mutex lifecycleMutex;
+	std::atomic<EState> state = EState::Stopped;
 	std::jthread processTaskThread;
+	mutable std::mutex workerIdentityMutex;
+	std::thread::id processorThreadId;
+	std::thread::id processTaskThreadId;
 
-	std::queue<std::unique_ptr<ProcessorTask>> taskQueue;
+	std::queue<std::unique_ptr<ProcessorTaskBase>> taskQueue;
 	mutable std::mutex messageQueueMutex;
 	std::condition_variable messageQueueCV;
 };

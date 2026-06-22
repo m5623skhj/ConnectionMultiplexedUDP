@@ -129,6 +129,8 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="Client.cpp" />
+    <ClCompile Include="ClientManager.cpp" />
+    <ClCompile Include="HeartbeatProcessor.cpp" />
     <ClCompile Include="IOProcessor.cpp" />
     <ClCompile Include="ProcessorBase.cpp" />
     <ClCompile Include="ProcessorBase.h" />
@@ -141,13 +143,19 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Client.h" />
+    <ClInclude Include="ClientDisconnectTask.h" />
+    <ClInclude Include="ClientManager.h" />
+    <ClInclude Include="HeartbeatProcessor.h" />
     <ClInclude Include="IOProcessor.h" />
     <ClInclude Include="LogicProcessor.h" />
     <ClInclude Include="ProcessorManager.h" />
+    <ClInclude Include="ProcessorTaskBase.h" />
     <ClInclude Include="ProcessorType.h" />
+    <ClInclude Include="ReceivedPacketTask.h" />
     <ClInclude Include="ServerCore.h" />
     <ClInclude Include="SessionLookupTable.h" />
     <ClInclude Include="TickerProcessor.h" />
+    <ClInclude Include="TickerTask.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

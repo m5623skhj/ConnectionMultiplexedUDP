@@ -1,6 +1,8 @@
 #pragma once
 
 #include <cstdint>
+#include <memory>
+#include <mutex>
 #include <queue>
 #include <vector>
 
@@ -17,10 +19,10 @@ public:
 	~SessionLookupTable();
 
 public:
-	ConnectionId Allocate(Session* session);
-	void Release(ConnectionId connectionId);
+	ConnectionId Allocate(std::shared_ptr<Session> inSession);
+	bool Release(ConnectionId connectionId);
 
-	Session* Find(ConnectionId connectionId) const;
+	std::shared_ptr<Session> Find(ConnectionId connectionId) const;
 
 	static uint32_t GetIndex(ConnectionId connectionId);
 	static uint32_t GetGeneration(ConnectionId connectionId);
@@ -31,10 +33,11 @@ private:
 private:
 	struct SessionSlot
 	{
-		Session* sessionPtr = nullptr;
-		uint32_t generation = 0;
+		std::shared_ptr<Session> session;
+		uint32_t generation = 1;
 	};
 
+	mutable std::mutex slotsMutex;
 	std::vector<SessionSlot> slots;
 	std::queue<uint32_t> freeIndices;
 };

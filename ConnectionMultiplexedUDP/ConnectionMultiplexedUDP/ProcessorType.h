@@ -1,14 +1,19 @@
 #pragma once
 
+#include <cstddef>
+#include <cstdint>
+#include <limits>
+
 enum class EProcessorType : uint8_t
 {
 	IO,
 	Logic,
 	TICKER,
+	HEART_BAET,
 
 	Max,
 };
 
-using ProcessorIndex = unsigned char;
-inline constexpr ProcessorIndex AnyProcessor = 0xFF;
-inline constexpr ProcessorIndex InvalidProcessor = 0xFF;
+using ProcessorIndex = size_t;
+inline constexpr ProcessorIndex AnyProcessor = (std::numeric_limits<ProcessorIndex>::max)();
+inline constexpr ProcessorIndex InvalidProcessor = AnyProcessor;

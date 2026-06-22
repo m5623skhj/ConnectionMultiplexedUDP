@@ -18,6 +18,9 @@
     <Filter Include="소스 파일\Core\Client">
       <UniqueIdentifier>{74354a99-956e-40e9-8270-daf032f423f4}</UniqueIdentifier>
     </Filter>
+    <Filter Include="소스 파일\Core\Processor\ProcessorTask">
+      <UniqueIdentifier>{31436c6c-9c8d-43a6-97b6-1877917a63ab}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="ServerCore.cpp">
@@ -50,6 +53,12 @@
     <ClCompile Include="TickerProcessor.cpp">
       <Filter>소스 파일\Core\Processor</Filter>
     </ClCompile>
+    <ClCompile Include="ClientManager.cpp">
+      <Filter>소스 파일\Core\Client</Filter>
+    </ClCompile>
+    <ClCompile Include="HeartbeatProcessor.cpp">
+      <Filter>소스 파일\Core\Processor</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="ServerCore.h">
@@ -75,6 +84,24 @@
     </ClInclude>
     <ClInclude Include="TickerProcessor.h">
       <Filter>소스 파일\Core\Processor</Filter>
+    </ClInclude>
+    <ClInclude Include="TickerTask.h">
+      <Filter>소스 파일\Core\Processor\ProcessorTask</Filter>
+    </ClInclude>
+    <ClInclude Include="ProcessorTaskBase.h">
+      <Filter>소스 파일\Core\Processor\ProcessorTask</Filter>
+    </ClInclude>
+    <ClInclude Include="ReceivedPacketTask.h">
+      <Filter>소스 파일\Core\Processor\ProcessorTask</Filter>
+    </ClInclude>
+    <ClInclude Include="ClientDisconnectTask.h">
+      <Filter>소스 파일\Core\Processor\ProcessorTask</Filter>
+    </ClInclude>
+    <ClInclude Include="HeartbeatProcessor.h">
+      <Filter>소스 파일\Core\Processor</Filter>
+    </ClInclude>
+    <ClInclude Include="ClientManager.h">
+      <Filter>소스 파일\Core\Client</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

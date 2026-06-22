@@ -13,8 +13,14 @@ SessionLookupTable::~SessionLookupTable()
 {
 }
 
-ConnectionId SessionLookupTable::Allocate(Session* session)
+ConnectionId SessionLookupTable::Allocate(std::shared_ptr<Session> inSession)
 {
+	if (inSession == nullptr)
+	{
+		return InvalidConnectionId;
+	}
+
+	std::scoped_lock lock(slotsMutex);
 	if (freeIndices.empty())
 	{
 		return InvalidConnectionId;
@@ -24,28 +30,53 @@ ConnectionId SessionLookupTable::Allocate(Session* session)
 	freeIndices.pop();
 
 	SessionSlot& slot = slots[index];
-	slot.sessionPtr = session;
+	slot.session = std::move(inSession);
 
 	return MakeConnectionId(index, slot.generation);
 }
 
-void SessionLookupTable::Release(ConnectionId connectionId)
+bool SessionLookupTable::Release(ConnectionId connectionId)
 {
-	const uint32_t index = GetIndex(connectionId);
-	if (index >= slots.size())
+	std::shared_ptr<Session> removedSession;
 	{
-		return;
+		std::scoped_lock lock(slotsMutex);
+		const uint32_t index = GetIndex(connectionId);
+		if (index >= slots.size())
+		{
+			return false;
+		}
+
+		SessionSlot& slot = slots[index];
+		if (slot.session == nullptr || slot.generation != GetGeneration(connectionId))
+		{
+			return false;
+		}
+
+		removedSession = std::move(slot.session);
+		++slot.generation;
+		if (slot.generation == 0)
+		{
+			++slot.generation;
+		}
+
+		freeIndices.push(index);
 	}
 
-	SessionSlot& slot = slots[index];
-	slot.sessionPtr = nullptr;
-	++slot.generation;
-
-	freeIndices.push(index);
+	if (removedSession == nullptr)
+	{
+		return false;
+	}
+	return true;
 }
 
-Session* SessionLookupTable::Find(ConnectionId connectionId) const
+std::shared_ptr<Session> SessionLookupTable::Find(ConnectionId connectionId) const
 {
+	if (connectionId == InvalidConnectionId)
+	{
+		return nullptr;
+	}
+
+	std::scoped_lock lock(slotsMutex);
 	const uint32_t index = GetIndex(connectionId);
 	if (index >= slots.size())
 	{
@@ -58,7 +89,7 @@ Session* SessionLookupTable::Find(ConnectionId connectionId) const
 		return nullptr;
 	}
 
-	return slot.sessionPtr;
+	return slot.session;
 }
 
 uint32_t SessionLookupTable::GetIndex(ConnectionId connectionId)

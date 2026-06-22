@@ -1,5 +1,7 @@
 #pragma once
 #include "ProcessorManager.h"
+#include <cstdint>
+#include <mutex>
 
 #pragma comment(lib, "ws2_32.lib")
 
@@ -16,9 +18,18 @@ public:
 
 public:
 	bool Start();
-	void Stop();
+	bool Stop();
 
 private:
+	enum class EState : uint8_t
+	{
+		Stopped,
+		Starting,
+		Running,
+		Stopping,
+	};
+
+	std::mutex lifecycleMutex;
 	ProcessorManager processorManager;
-	bool started = false;
+	EState state = EState::Stopped;
 };

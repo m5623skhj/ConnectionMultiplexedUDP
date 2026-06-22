@@ -1,6 +1,9 @@
 #pragma once
 #include "ProcessorBase.h"
+#include <atomic>
 #include <array>
+#include <cstdint>
+#include <mutex>
 #include <vector>
 #include "ProcessorType.h"
 
@@ -18,18 +21,37 @@ public:
 
 public:
 	bool Start();
-	void Stop();
+	bool Stop();
 
 public:
-	bool PushTaskToProcessor(const EProcessorType processorType, std::unique_ptr<ProcessorTask>&& task, const ProcessorIndex c = AnyProcessor);
+	bool PushTaskToProcessor(const EProcessorType processorType, std::unique_ptr<ProcessorTaskBase>&& task, const ProcessorIndex c = AnyProcessor);
+	bool PushTaskToProcessorByAffinity(
+		EProcessorType processorType,
+		std::unique_ptr<ProcessorTaskBase>&& task,
+		uint64_t affinityKey);
 
 private:
+	enum class EState : uint8_t
+	{
+		Stopped,
+		Starting,
+		Running,
+		Stopping,
+	};
+
+	void RegisterAllProcessor();
+	void StopAllProcessors();
 	ProcessorIndex GetLeastBusyProcessorIndex(const EProcessorType processorType) const;
 
 private:
 	int ioProcessorCount;
 	int logicProcessorCount;
+	uint16_t ioProcessorPortBase;
+	int tickerProcessorIntervalMs;
+	bool configurationValid = false;
 	
 private:
+	mutable std::mutex lifecycleMutex;
+	std::atomic<EState> state = EState::Stopped;
 	std::array<std::vector<std::unique_ptr<ProcessorBase>>, static_cast<size_t>(EProcessorType::Max)> processorGroup;
 };

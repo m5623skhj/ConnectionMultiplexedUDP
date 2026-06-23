@@ -6,6 +6,7 @@
 #include <functional>
 #include <memory>
 #include <mutex>
+#include <string_view>
 #include <thread>
 #include <unordered_map>
 
@@ -42,6 +43,8 @@ public:
 
 	// Visits for a client are serialized. Nested visits from a visitor are rejected.
 	bool VisitClient(ClientId clientId, const ClientVisitor& visitor) const;
+	bool DispatchPacket(ClientId clientId, PacketType inPacketType, std::string_view inPayload) const;
+	bool ContainsClient(ClientId clientId) const;
 	size_t GetClientCount() const;
 
 private:

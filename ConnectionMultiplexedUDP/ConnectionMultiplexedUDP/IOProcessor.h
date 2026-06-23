@@ -1,7 +1,6 @@
 #pragma once
 #include "ProcessorBase.h"
 #include "ProcessorType.h"
-#include "SessionLookupTable.h"
 #include <mutex>
 #include <winsock2.h>
 
@@ -28,7 +27,6 @@ private:
 	void ProcessTask(std::unique_ptr<ProcessorTaskBase>&& task) override;
 
 private:
-	SessionLookupTable sessionLookupTable;
 	ProcessorIndex processorIndex;
 
 	mutable std::mutex socketMutex;

@@ -53,6 +53,10 @@
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <PropertyGroup>
+    <VcpkgRoot Condition="'$(VcpkgRoot)' == ''">$(VCToolsInstallDir)..\..\..\vcpkg\</VcpkgRoot>
+  </PropertyGroup>
+  <Import Project="$(VcpkgRoot)scripts\buildsystems\msbuild\vcpkg.props" />
   <ImportGroup Label="ExtensionSettings">
   </ImportGroup>
   <ImportGroup Label="Shared">
@@ -70,6 +74,20 @@
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
+  <PropertyGroup>
+    <VcpkgEnableManifest>true</VcpkgEnableManifest>
+    <VcpkgManifestRoot>$(ProjectDir)..\</VcpkgManifestRoot>
+    <VcpkgInstalledDir>$(ProjectDir)..\vcpkg_installed\</VcpkgInstalledDir>
+    <ProtobufSource>$(ProjectDir)Protocol\PacketEnvelope.proto</ProtobufSource>
+    <ProtobufGeneratedDir>$(ProjectDir)Generated</ProtobufGeneratedDir>
+    <ProtobufGeneratedSource>$(ProtobufGeneratedDir)\PacketEnvelope.pb.cc</ProtobufGeneratedSource>
+    <ProtobufGeneratedHeader>$(ProtobufGeneratedDir)\PacketEnvelope.pb.h</ProtobufGeneratedHeader>
+  </PropertyGroup>
+  <ItemDefinitionGroup>
+    <ClCompile>
+      <ExternalWarningLevel>TurnOffAllWarnings</ExternalWarningLevel>
+    </ClCompile>
+  </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
@@ -130,8 +148,10 @@
   <ItemGroup>
     <ClCompile Include="Client.cpp" />
     <ClCompile Include="ClientManager.cpp" />
+    <ClCompile Include="Generated\PacketEnvelope.pb.cc" />
     <ClCompile Include="HeartbeatProcessor.cpp" />
     <ClCompile Include="IOProcessor.cpp" />
+    <ClCompile Include="Protocol\PacketAuthentication.cpp" />
     <ClCompile Include="ProcessorBase.cpp" />
     <ClCompile Include="ProcessorBase.h" />
     <ClCompile Include="LogicProcessor.cpp" />
@@ -139,25 +159,42 @@
     <ClCompile Include="ProcessorManager.cpp" />
     <ClCompile Include="ServerCore.cpp" />
     <ClCompile Include="SessionLookupTable.cpp" />
+    <ClCompile Include="Session.cpp" />
     <ClCompile Include="TickerProcessor.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Client.h" />
     <ClInclude Include="ClientDisconnectTask.h" />
     <ClInclude Include="ClientManager.h" />
+    <ClInclude Include="Generated\PacketEnvelope.pb.h" />
     <ClInclude Include="HeartbeatProcessor.h" />
     <ClInclude Include="IOProcessor.h" />
     <ClInclude Include="LogicProcessor.h" />
     <ClInclude Include="ProcessorManager.h" />
     <ClInclude Include="ProcessorTaskBase.h" />
     <ClInclude Include="ProcessorType.h" />
+    <ClInclude Include="Protocol\PacketProtocol.h" />
+    <ClInclude Include="Protocol\PacketAuthentication.h" />
     <ClInclude Include="ReceivedPacketTask.h" />
     <ClInclude Include="ServerCore.h" />
     <ClInclude Include="SessionLookupTable.h" />
+    <ClInclude Include="Session.h" />
     <ClInclude Include="TickerProcessor.h" />
     <ClInclude Include="TickerTask.h" />
   </ItemGroup>
+  <ItemGroup>
+    <None Include="Protocol\PacketEnvelope.proto" />
+  </ItemGroup>
+  <Target Name="GenerateProtobufSources"
+          BeforeTargets="ClCompile"
+          DependsOnTargets="VcpkgInstallManifestDependencies"
+          Inputs="$(ProtobufSource)"
+          Outputs="$(ProtobufGeneratedSource);$(ProtobufGeneratedHeader)">
+    <MakeDir Directories="$(ProtobufGeneratedDir)" />
+    <Exec Command="&quot;$(VcpkgInstalledDir)$(VcpkgTriplet)\tools\protobuf\protoc.exe&quot; --proto_path=&quot;$(ProjectDir)Protocol&quot; --proto_path=&quot;$(VcpkgInstalledDir)$(VcpkgTriplet)\include&quot; --cpp_out=&quot;$(ProtobufGeneratedDir)&quot; &quot;$(ProtobufSource)&quot;" />
+  </Target>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
+    <Import Project="$(VcpkgRoot)scripts\buildsystems\msbuild\vcpkg.targets" />
   </ImportGroup>
 </Project>

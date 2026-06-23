@@ -1,5 +1,7 @@
 #pragma once
+#include "ClientManager.h"
 #include "ProcessorManager.h"
+#include "Protocol/PacketAuthentication.h"
 #include <cstdint>
 #include <mutex>
 
@@ -19,6 +21,13 @@ public:
 public:
 	bool Start();
 	bool Stop();
+	ClientId AddClient(std::unique_ptr<Client> inClient);
+	bool RemoveClient(ClientId clientId);
+	ConnectionId RegisterClientSession(
+		ClientId clientId,
+		const sockaddr_in& inRemoteAddress,
+		const cmudp::protocol::AuthenticationKey& inAuthenticationKey);
+	bool RemoveClientSession(ConnectionId connectionId);
 
 private:
 	enum class EState : uint8_t
@@ -30,6 +39,8 @@ private:
 	};
 
 	std::mutex lifecycleMutex;
+	std::mutex clientSessionMutex;
+	ClientManager clientManager;
 	ProcessorManager processorManager;
 	EState state = EState::Stopped;
 };

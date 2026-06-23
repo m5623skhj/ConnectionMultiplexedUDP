@@ -1,5 +1,6 @@
 #include "IOProcessor.h"
 #include "ProcessorManager.h"
+#include "Protocol/PacketProtocol.h"
 #include "ReceivedPacketTask.h"
 #include <array>
 #include <iostream>
@@ -10,7 +11,6 @@ IOProcessor::IOProcessor(
 	const ProcessorIndex inProcessorIndex,
 	const uint16_t inPort)
 	: ProcessorBase(inProcessorManager)
-	, sessionLookupTable(1000)
 	, processorIndex(inProcessorIndex)
 	, sock(INVALID_SOCKET)
 	, port(inPort)
@@ -102,8 +102,7 @@ bool IOProcessor::SendPacket(const sockaddr_in& destAddr, const char* data, cons
 
 void IOProcessor::RunRecvThread()
 {
-	constexpr int MAX_PACKET_SIZE = 4096;
-	std::array<char, MAX_PACKET_SIZE> recvBuffer;
+	std::array<char, cmudp::protocol::MAX_PACKET_SIZE> recvBuffer;
 
 	while (true)
 	{

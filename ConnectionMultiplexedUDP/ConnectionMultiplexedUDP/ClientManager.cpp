@@ -142,6 +142,28 @@ bool ClientManager::VisitClient(const ClientId clientId, const ClientVisitor& vi
 	return true;
 }
 
+bool ClientManager::DispatchPacket(
+	const ClientId clientId,
+	const PacketType inPacketType,
+	const std::string_view inPayload) const
+{
+	if (inPacketType == INVALID_PACKET_TYPE)
+	{
+		return false;
+	}
+
+	return VisitClient(clientId, [inPacketType, inPayload](Client& client)
+		{
+			client.OnRecvPacket(inPacketType, inPayload);
+		});
+}
+
+bool ClientManager::ContainsClient(const ClientId clientId) const
+{
+	std::scoped_lock lock(clientsMutex);
+	return clients.contains(clientId);
+}
+
 size_t ClientManager::GetClientCount() const
 {
 	std::scoped_lock lock(clientsMutex);

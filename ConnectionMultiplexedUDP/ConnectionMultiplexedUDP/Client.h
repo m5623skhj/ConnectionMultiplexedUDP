@@ -1,9 +1,12 @@
 #pragma once
 
 #include <cstdint>
+#include <string_view>
 
 using ClientId = uint64_t;
 inline constexpr ClientId InvalidClientId = 0;
+using PacketType = uint32_t;
+inline constexpr PacketType INVALID_PACKET_TYPE = 0;
 
 class ClientManager;
 
@@ -20,7 +23,8 @@ public:
 protected:
 	virtual void OnClientCreated() noexcept = 0;
 	virtual void OnClientDestroyed() noexcept = 0;
-	virtual void OnRecvPacket() = 0;
+	// inPayload is valid only for the duration of this callback.
+	virtual void OnRecvPacket(PacketType inPacketType, std::string_view inPayload) = 0;
 
 private:
 	friend class ClientManager;

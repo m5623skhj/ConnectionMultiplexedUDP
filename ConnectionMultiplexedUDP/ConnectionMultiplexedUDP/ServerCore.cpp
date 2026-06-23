@@ -1,6 +1,7 @@
 #include "ServerCore.h"
 #include <winsock2.h>
 #include <iostream>
+#include <utility>
 
 ServerCore::ServerCore(
 	const int inIoProcessorCount, 
@@ -8,7 +9,9 @@ ServerCore::ServerCore(
 	const uint16_t ioProcessorPortBase,
 	const int inTickMillisecond
 )
-	: processorManager(
+	: clientManager()
+	, processorManager(
+		clientManager,
 		inIoProcessorCount, 
 		inLogicProcessorCount, 
 		ioProcessorPortBase,
@@ -86,4 +89,40 @@ bool ServerCore::Stop()
 		state = EState::Stopped;
 	}
 	return true;
+}
+
+ClientId ServerCore::AddClient(std::unique_ptr<Client> inClient)
+{
+	std::scoped_lock lock(clientSessionMutex);
+	return clientManager.AddClient(std::move(inClient));
+}
+
+bool ServerCore::RemoveClient(const ClientId clientId)
+{
+	std::scoped_lock lock(clientSessionMutex);
+	processorManager.RemoveClientSessions(clientId);
+	return clientManager.RemoveClient(clientId);
+}
+
+ConnectionId ServerCore::RegisterClientSession(
+	const ClientId clientId,
+	const sockaddr_in& inRemoteAddress,
+	const cmudp::protocol::AuthenticationKey& inAuthenticationKey)
+{
+	std::scoped_lock lock(clientSessionMutex);
+	if (not clientManager.ContainsClient(clientId))
+	{
+		return InvalidConnectionId;
+	}
+
+	return processorManager.RegisterClientSession(
+		clientId,
+		inRemoteAddress,
+		inAuthenticationKey);
+}
+
+bool ServerCore::RemoveClientSession(const ConnectionId connectionId)
+{
+	std::scoped_lock lock(clientSessionMutex);
+	return processorManager.RemoveClientSession(connectionId);
 }

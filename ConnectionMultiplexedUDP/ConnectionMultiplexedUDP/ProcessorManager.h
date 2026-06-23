@@ -1,10 +1,15 @@
 #pragma once
 #include "ProcessorBase.h"
+#include "ClientManager.h"
+#include "Protocol/PacketAuthentication.h"
+#include "SessionLookupTable.h"
 #include <atomic>
 #include <array>
 #include <cstdint>
 #include <mutex>
 #include <vector>
+#include <string_view>
+#include <winsock2.h>
 #include "ProcessorType.h"
 
 class ProcessorManager
@@ -12,6 +17,7 @@ class ProcessorManager
 public:
 	ProcessorManager() = delete;
 	explicit ProcessorManager(
+		ClientManager& inClientManager,
 		const int inIoProcessorCount, 
 		const int inLogicProcessorCount, 
 		const uint16_t ioProcessorPortBase,
@@ -29,6 +35,17 @@ public:
 		EProcessorType processorType,
 		std::unique_ptr<ProcessorTaskBase>&& task,
 		uint64_t affinityKey);
+	ConnectionId RegisterClientSession(
+		ClientId clientId,
+		const sockaddr_in& inRemoteAddress,
+		const cmudp::protocol::AuthenticationKey& inAuthenticationKey);
+	bool RemoveClientSession(ConnectionId connectionId);
+	size_t RemoveClientSessions(ClientId clientId);
+	bool AuthenticateAndDispatchPacket(
+		const sockaddr_in& inSenderAddress,
+		ConnectionId connectionId,
+		std::string_view inAuthenticatedData,
+		std::string_view inAuthenticationTag) const;
 
 private:
 	enum class EState : uint8_t
@@ -44,6 +61,8 @@ private:
 	ProcessorIndex GetLeastBusyProcessorIndex(const EProcessorType processorType) const;
 
 private:
+	ClientManager& clientManager;
+	SessionLookupTable sessionLookupTable;
 	int ioProcessorCount;
 	int logicProcessorCount;
 	uint16_t ioProcessorPortBase;

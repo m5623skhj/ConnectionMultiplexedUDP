@@ -3,14 +3,19 @@
 #include "LogicProcessor.h"
 #include "TickerProcessor.h"
 #include "HeartbeatProcessor.h"
+#include "Generated/PacketEnvelope.pb.h"
+#include "Session.h"
 #include <limits>
 
 ProcessorManager::ProcessorManager(
+	ClientManager& inClientManager,
 	const int inIoProcessorCount,
 	const int inLogicProcessorCount,
 	const uint16_t inIoProcessorPortBase,
 	const int inTickerProcessorIntervalMs)
-	: ioProcessorCount(inIoProcessorCount)
+	: clientManager(inClientManager)
+	, sessionLookupTable(1000)
+	, ioProcessorCount(inIoProcessorCount)
 	, logicProcessorCount(inLogicProcessorCount)
 	, ioProcessorPortBase(inIoProcessorPortBase)
 	, tickerProcessorIntervalMs(inTickerProcessorIntervalMs)
@@ -163,6 +168,67 @@ bool ProcessorManager::PushTaskToProcessorByAffinity(
 
 	const ProcessorIndex processorIndex = static_cast<ProcessorIndex>(affinityKey % processors.size());
 	return PushTaskToProcessor(processorType, std::move(task), processorIndex);
+}
+
+ConnectionId ProcessorManager::RegisterClientSession(
+	const ClientId clientId,
+	const sockaddr_in& inRemoteAddress,
+	const cmudp::protocol::AuthenticationKey& inAuthenticationKey)
+{
+	if (clientId == InvalidClientId
+		|| not cmudp::protocol::IsValidAuthenticationKey(inAuthenticationKey))
+	{
+		return InvalidConnectionId;
+	}
+
+	return sessionLookupTable.Allocate(std::make_shared<Session>(
+		clientId,
+		inRemoteAddress,
+		inAuthenticationKey));
+}
+
+bool ProcessorManager::RemoveClientSession(const ConnectionId connectionId)
+{
+	return sessionLookupTable.Release(connectionId);
+}
+
+size_t ProcessorManager::RemoveClientSessions(const ClientId clientId)
+{
+	return sessionLookupTable.ReleaseByClientId(clientId);
+}
+
+bool ProcessorManager::AuthenticateAndDispatchPacket(
+	const sockaddr_in& inSenderAddress,
+	const ConnectionId connectionId,
+	const std::string_view inAuthenticatedData,
+	const std::string_view inAuthenticationTag) const
+{
+	const std::shared_ptr<Session> session = sessionLookupTable.Find(connectionId);
+	if (session == nullptr
+		|| not session->VerifyPacketAuthentication(
+			inSenderAddress,
+			inAuthenticatedData,
+			inAuthenticationTag))
+	{
+		return false;
+	}
+
+	cmudp::protocol::AuthenticatedPacket authenticatedPacket;
+	if (not authenticatedPacket.ParseFromArray(
+			inAuthenticatedData.data(),
+			static_cast<int>(inAuthenticatedData.size()))
+		|| authenticatedPacket.connection_id() != connectionId
+		|| authenticatedPacket.protocol_version() != cmudp::protocol::CURRENT_PROTOCOL_VERSION
+		|| authenticatedPacket.packet_type() == INVALID_PACKET_TYPE
+		|| not session->AcceptSequence(authenticatedPacket.sequence()))
+	{
+		return false;
+	}
+
+	return clientManager.DispatchPacket(
+		session->GetClientId(),
+		authenticatedPacket.packet_type(),
+		authenticatedPacket.payload());
 }
 
 void ProcessorManager::RegisterAllProcessor()

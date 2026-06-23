@@ -1,5 +1,6 @@
 #pragma once
 
+#include "Client.h"
 #include <cstdint>
 #include <memory>
 #include <mutex>
@@ -21,6 +22,7 @@ public:
 public:
 	ConnectionId Allocate(std::shared_ptr<Session> inSession);
 	bool Release(ConnectionId connectionId);
+	size_t ReleaseByClientId(ClientId clientId);
 
 	std::shared_ptr<Session> Find(ConnectionId connectionId) const;
 

@@ -21,6 +21,9 @@
     <Filter Include="소스 파일\Core\Processor\ProcessorTask">
       <UniqueIdentifier>{31436c6c-9c8d-43a6-97b6-1877917a63ab}</UniqueIdentifier>
     </Filter>
+    <Filter Include="소스 파일\Protocol">
+      <UniqueIdentifier>{7e7b95a2-64df-4b7e-8db7-f742f9e020c4}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="ServerCore.cpp">
@@ -56,8 +59,17 @@
     <ClCompile Include="ClientManager.cpp">
       <Filter>소스 파일\Core\Client</Filter>
     </ClCompile>
+    <ClCompile Include="Generated\PacketEnvelope.pb.cc">
+      <Filter>소스 파일\Protocol</Filter>
+    </ClCompile>
     <ClCompile Include="HeartbeatProcessor.cpp">
       <Filter>소스 파일\Core\Processor</Filter>
+    </ClCompile>
+    <ClCompile Include="Protocol\PacketAuthentication.cpp">
+      <Filter>소스 파일\Protocol</Filter>
+    </ClCompile>
+    <ClCompile Include="Session.cpp">
+      <Filter>소스 파일\Core</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -103,5 +115,22 @@
     <ClInclude Include="ClientManager.h">
       <Filter>소스 파일\Core\Client</Filter>
     </ClInclude>
+    <ClInclude Include="Generated\PacketEnvelope.pb.h">
+      <Filter>소스 파일\Protocol</Filter>
+    </ClInclude>
+    <ClInclude Include="Protocol\PacketProtocol.h">
+      <Filter>소스 파일\Protocol</Filter>
+    </ClInclude>
+    <ClInclude Include="Protocol\PacketAuthentication.h">
+      <Filter>소스 파일\Protocol</Filter>
+    </ClInclude>
+    <ClInclude Include="Session.h">
+      <Filter>소스 파일\Core</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Protocol\PacketEnvelope.proto">
+      <Filter>소스 파일\Protocol</Filter>
+    </None>
   </ItemGroup>
 </Project>

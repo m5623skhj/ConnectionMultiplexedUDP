@@ -1,0 +1,17 @@
+syntax = "proto3";
+
+package cmudp.protocol;
+
+message PacketEnvelope {
+  fixed64 connection_id = 1;
+  bytes authenticated_data = 2;
+  bytes authentication_tag = 3;
+}
+
+message AuthenticatedPacket {
+  uint32 protocol_version = 1;
+  fixed64 connection_id = 2;
+  fixed64 sequence = 3;
+  uint32 packet_type = 4;
+  bytes payload = 5;
+}

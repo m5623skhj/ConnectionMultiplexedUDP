@@ -1,4 +1,5 @@
 #include "SessionLookupTable.h"
+#include "Session.h"
 
 SessionLookupTable::SessionLookupTable(uint32_t maxSessionCount)
 	: slots(maxSessionCount)
@@ -67,6 +68,31 @@ bool SessionLookupTable::Release(ConnectionId connectionId)
 		return false;
 	}
 	return true;
+}
+
+size_t SessionLookupTable::ReleaseByClientId(const ClientId clientId)
+{
+	std::vector<std::shared_ptr<Session>> removedSessions;
+	{
+		std::scoped_lock lock(slotsMutex);
+		for (uint32_t index = 0; index < slots.size(); ++index)
+		{
+			SessionSlot& slot = slots[index];
+			if (slot.session == nullptr || slot.session->GetClientId() != clientId)
+			{
+				continue;
+			}
+
+			removedSessions.push_back(std::move(slot.session));
+			++slot.generation;
+			if (slot.generation == 0)
+			{
+				++slot.generation;
+			}
+			freeIndices.push(index);
+		}
+	}
+	return removedSessions.size();
 }
 
 std::shared_ptr<Session> SessionLookupTable::Find(ConnectionId connectionId) const

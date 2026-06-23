@@ -1,3 +1,9 @@
 ConnectionMultiplexedUDP/.vs/
 ConnectionMultiplexedUDP/ConnectionMultiplexedUDP/x64/
 ConnectionMultiplexedUDP/x64/
+ConnectionMultiplexedUDP/ConnectionMultiplexedUDP/Debug/
+ConnectionMultiplexedUDP/ConnectionMultiplexedUDP/Release/
+ConnectionMultiplexedUDP/Debug/
+ConnectionMultiplexedUDP/Release/
+ConnectionMultiplexedUDP/vcpkg_installed/
+ConnectionMultiplexedUDP/ConnectionMultiplexedUDP/Generated/

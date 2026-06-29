@@ -22,7 +22,8 @@ public:
 		const int inIoProcessorCount, 
 		const int inLogicProcessorCount, 
 		const uint16_t ioProcessorPortBase,
-		const int inTickMillisecond
+		const int inTickMillisecond,
+		const int inSessionTimeoutMillisecond = 30000
 	);
 	~ProcessorManager();
 
@@ -53,11 +54,12 @@ public:
 		const cmudp::protocol::AuthenticationKey& inAuthenticationKey);
 	bool RemoveClientSession(ConnectionId connectionId);
 	size_t RemoveClientSessions(ClientId clientId);
+	std::shared_ptr<Session> FindSession(ConnectionId connectionId) const;
 	bool AuthenticateAndDispatchPacket(
 		const sockaddr_in& inSenderAddress,
 		ConnectionId connectionId,
 		std::string_view inAuthenticatedData,
-		std::string_view inAuthenticationTag) const;
+		std::string_view inAuthenticationTag);
 
 private:
 	enum class EState : uint8_t
@@ -79,6 +81,7 @@ private:
 	int logicProcessorCount;
 	uint16_t ioProcessorPortBase;
 	int tickerProcessorIntervalMs;
+	int sessionTimeoutMs;
 	bool configurationValid = false;
 	
 private:

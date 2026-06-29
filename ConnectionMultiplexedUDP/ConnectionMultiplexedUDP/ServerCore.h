@@ -15,7 +15,8 @@ public:
 		const int inIoProcessorCount, 
 		const int inLogicProcessorCount, 
 		const uint16_t ioProcessorPortBase,
-		const int inTickMillisecond
+		const int inTickMillisecond,
+		const int inSessionTimeoutMillisecond = 30000
 	);
 	~ServerCore();
 

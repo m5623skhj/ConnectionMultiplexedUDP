@@ -4,6 +4,7 @@
 #include "Generated/PacketEnvelope.pb.h"
 #include "Protocol/PacketProtocol.h"
 #include "ReceivedPacketTask.h"
+#include "Session.h"
 
 LogicProcessor::LogicProcessor(ProcessorManager& inProcessorManager)
     : ProcessorBase(inProcessorManager)
@@ -47,6 +48,16 @@ void LogicProcessor::ProcessClientDisconnect(const ClientDisconnectTask& task)
 	if (connectionId == InvalidConnectionId)
 	{
 		return;
+	}
+
+	if (task.RequiresTimeoutValidation())
+	{
+		const std::shared_ptr<Session> session = processorManager.FindSession(connectionId);
+		if (session == nullptr
+			|| not session->HasTimedOut(task.GetRequestedTime(), task.GetTimeout()))
+		{
+			return;
+		}
 	}
 
 	processorManager.RemoveClientSession(connectionId);

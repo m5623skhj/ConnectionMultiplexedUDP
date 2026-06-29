@@ -15,13 +15,15 @@ ProcessorManager::ProcessorManager(
 	const int inIoProcessorCount,
 	const int inLogicProcessorCount,
 	const uint16_t inIoProcessorPortBase,
-	const int inTickerProcessorIntervalMs)
+	const int inTickerProcessorIntervalMs,
+	const int inSessionTimeoutMillisecond)
 	: clientManager(inClientManager)
 	, sessionLookupTable(1000)
 	, ioProcessorCount(inIoProcessorCount)
 	, logicProcessorCount(inLogicProcessorCount)
 	, ioProcessorPortBase(inIoProcessorPortBase)
 	, tickerProcessorIntervalMs(inTickerProcessorIntervalMs)
+	, sessionTimeoutMs(inSessionTimeoutMillisecond)
 {
 	const uint32_t availablePortCount =
 		static_cast<uint32_t>((std::numeric_limits<uint16_t>::max)())
@@ -29,6 +31,7 @@ ProcessorManager::ProcessorManager(
 	configurationValid = ioProcessorCount > 0
 		&& logicProcessorCount > 0
 		&& tickerProcessorIntervalMs > 0
+		&& sessionTimeoutMs > 0
 		&& static_cast<uint32_t>(ioProcessorCount) <= availablePortCount;
 	if (configurationValid)
 	{
@@ -198,9 +201,19 @@ size_t ProcessorManager::RequestTimedOutSessionDisconnects(const std::chrono::mi
 	size_t requestedCount = 0;
 	for (const auto& [connectionId, session] : sessionLookupTable.SnapshotActiveSessions())
 	{
-		if (session != nullptr
-			&& session->HasTimedOut(currentTime, sessionTimeout)
-			&& RequestClientDisconnect(connectionId))
+		if (session == nullptr || not session->HasTimedOut(currentTime, sessionTimeout))
+		{
+			continue;
+		}
+
+		auto task = std::make_unique<ClientDisconnectTask>(
+			connectionId,
+			currentTime,
+			sessionTimeout);
+		if (PushTaskToProcessorByAffinity(
+				EProcessorType::Logic,
+				std::move(task),
+				connectionId))
 		{
 			++requestedCount;
 		}
@@ -290,11 +303,16 @@ size_t ProcessorManager::RemoveClientSessions(const ClientId clientId)
 	return sessionLookupTable.ReleaseByClientId(clientId);
 }
 
+std::shared_ptr<Session> ProcessorManager::FindSession(const ConnectionId connectionId) const
+{
+	return sessionLookupTable.Find(connectionId);
+}
+
 bool ProcessorManager::AuthenticateAndDispatchPacket(
 	const sockaddr_in& inSenderAddress,
 	const ConnectionId connectionId,
 	const std::string_view inAuthenticatedData,
-	const std::string_view inAuthenticationTag) const
+	const std::string_view inAuthenticationTag)
 {
 	const std::shared_ptr<Session> session = sessionLookupTable.Find(connectionId);
 	if (session == nullptr
@@ -319,6 +337,15 @@ bool ProcessorManager::AuthenticateAndDispatchPacket(
 	}
 
 	session->MarkReceivedNow();
+	if (authenticatedPacket.packet_type() == cmudp::protocol::HEARTBEAT_PACKET_TYPE)
+	{
+		return true;
+	}
+	if (authenticatedPacket.packet_type() == cmudp::protocol::DISCONNECT_PACKET_TYPE)
+	{
+		return RequestClientDisconnect(connectionId);
+	}
+
 	return clientManager.DispatchPacket(
 		session->GetClientId(),
 		authenticatedPacket.packet_type(),
@@ -342,7 +369,10 @@ void ProcessorManager::RegisterAllProcessor()
 	}
 
 	processorGroup[static_cast<size_t>(EProcessorType::TICKER)].push_back(std::make_unique<TickerProcessor>(*this, tickerProcessorIntervalMs));
-	processorGroup[static_cast<size_t>(EProcessorType::HEART_BAET)].push_back(std::make_unique<HeartbeatProcessor>(*this));
+	processorGroup[static_cast<size_t>(EProcessorType::HEART_BAET)].push_back(
+		std::make_unique<HeartbeatProcessor>(
+			*this,
+			std::chrono::milliseconds(sessionTimeoutMs)));
 }
 
 void ProcessorManager::StopAllProcessors()

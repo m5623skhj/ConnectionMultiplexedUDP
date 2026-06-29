@@ -7,7 +7,8 @@ ServerCore::ServerCore(
 	const int inIoProcessorCount, 
 	const int inLogicProcessorCount, 
 	const uint16_t ioProcessorPortBase,
-	const int inTickMillisecond
+	const int inTickMillisecond,
+	const int inSessionTimeoutMillisecond
 )
 	: clientManager(*this)
 	, processorManager(
@@ -15,7 +16,8 @@ ServerCore::ServerCore(
 		inIoProcessorCount, 
 		inLogicProcessorCount, 
 		ioProcessorPortBase,
-		inTickMillisecond
+		inTickMillisecond,
+		inSessionTimeoutMillisecond
 	)
 {
 }

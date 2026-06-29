@@ -1,9 +1,16 @@
 #include <iostream>
 #include "ServerCore.h"
+#include "SmokeTest.h"
+#include <string_view>
 #include <Windows.h>
 
-int main()
+int main(int argc, char* argv[])
 {
+	if (argc > 1 && std::string_view(argv[1]) == "--smoke-test")
+	{
+		return RunSmokeTest();
+	}
+
 	ServerCore serverCore(4, 4, 7777, 1000);
 	if (not serverCore.Start())
 	{

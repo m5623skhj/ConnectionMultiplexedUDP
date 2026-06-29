@@ -106,6 +106,9 @@
     <ClInclude Include="ReceivedPacketTask.h">
       <Filter>소스 파일\Core\Processor\ProcessorTask</Filter>
     </ClInclude>
+    <ClInclude Include="SendPacketTask.h">
+      <Filter>소스 파일\Core\Processor\ProcessorTask</Filter>
+    </ClInclude>
     <ClInclude Include="ClientDisconnectTask.h">
       <Filter>소스 파일\Core\Processor\ProcessorTask</Filter>
     </ClInclude>

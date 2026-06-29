@@ -35,6 +35,10 @@ public:
 		EProcessorType processorType,
 		std::unique_ptr<ProcessorTaskBase>&& task,
 		uint64_t affinityKey);
+	bool SendPacket(
+		ProcessorIndex ioProcessorIndex,
+		const sockaddr_in& inDestAddress,
+		std::string_view inPacketData);
 	ConnectionId RegisterClientSession(
 		ClientId clientId,
 		const sockaddr_in& inRemoteAddress,

@@ -4,6 +4,7 @@
 #include "TickerProcessor.h"
 #include "HeartbeatProcessor.h"
 #include "Generated/PacketEnvelope.pb.h"
+#include "SendPacketTask.h"
 #include "Session.h"
 #include <limits>
 
@@ -168,6 +169,25 @@ bool ProcessorManager::PushTaskToProcessorByAffinity(
 
 	const ProcessorIndex processorIndex = static_cast<ProcessorIndex>(affinityKey % processors.size());
 	return PushTaskToProcessor(processorType, std::move(task), processorIndex);
+}
+
+bool ProcessorManager::SendPacket(
+	const ProcessorIndex ioProcessorIndex,
+	const sockaddr_in& inDestAddress,
+	const std::string_view inPacketData)
+{
+	if (inDestAddress.sin_family != AF_INET
+		|| inPacketData.empty()
+		|| inPacketData.size() > cmudp::protocol::MAX_PACKET_SIZE)
+	{
+		return false;
+	}
+
+	auto task = std::make_unique<SendPacketTask>(inDestAddress, inPacketData);
+	return PushTaskToProcessor(
+		EProcessorType::IO,
+		std::move(task),
+		ioProcessorIndex);
 }
 
 ConnectionId ProcessorManager::RegisterClientSession(

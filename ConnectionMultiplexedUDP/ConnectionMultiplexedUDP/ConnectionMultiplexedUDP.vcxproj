@@ -176,6 +176,7 @@
     <ClInclude Include="Protocol\PacketProtocol.h" />
     <ClInclude Include="Protocol\PacketAuthentication.h" />
     <ClInclude Include="ReceivedPacketTask.h" />
+    <ClInclude Include="SendPacketTask.h" />
     <ClInclude Include="ServerCore.h" />
     <ClInclude Include="SessionLookupTable.h" />
     <ClInclude Include="Session.h" />

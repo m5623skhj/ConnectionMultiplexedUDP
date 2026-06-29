@@ -2,8 +2,10 @@
 #include "ProcessorManager.h"
 #include "Protocol/PacketProtocol.h"
 #include "ReceivedPacketTask.h"
+#include "SendPacketTask.h"
 #include <array>
 #include <iostream>
+#include <limits>
 #include <utility>
 
 IOProcessor::IOProcessor(
@@ -159,4 +161,20 @@ void IOProcessor::RunRecvThread()
 
 void IOProcessor::ProcessTask(std::unique_ptr<ProcessorTaskBase>&& task)
 {
+	auto* sendPacketTask = dynamic_cast<SendPacketTask*>(task.get());
+	if (sendPacketTask == nullptr)
+	{
+		return;
+	}
+
+	const std::vector<char>& packetData = sendPacketTask->GetPacketData();
+	if (packetData.empty() || packetData.size() > (std::numeric_limits<int>::max)())
+	{
+		return;
+	}
+
+	SendPacket(
+		sendPacketTask->GetDestAddress(),
+		packetData.data(),
+		static_cast<int>(packetData.size()));
 }

@@ -1,4 +1,5 @@
 #include "ProcessorManager.h"
+#include "ClientDisconnectTask.h"
 #include "IOProcessor.h"
 #include "LogicProcessor.h"
 #include "TickerProcessor.h"
@@ -7,6 +8,7 @@
 #include "SendPacketTask.h"
 #include "Session.h"
 #include <limits>
+#include <string>
 
 ProcessorManager::ProcessorManager(
 	ClientManager& inClientManager,
@@ -171,6 +173,42 @@ bool ProcessorManager::PushTaskToProcessorByAffinity(
 	return PushTaskToProcessor(processorType, std::move(task), processorIndex);
 }
 
+bool ProcessorManager::RequestClientDisconnect(const ConnectionId connectionId)
+{
+	if (connectionId == InvalidConnectionId)
+	{
+		return false;
+	}
+
+	auto task = std::make_unique<ClientDisconnectTask>(connectionId);
+	return PushTaskToProcessorByAffinity(
+		EProcessorType::Logic,
+		std::move(task),
+		connectionId);
+}
+
+size_t ProcessorManager::RequestTimedOutSessionDisconnects(const std::chrono::milliseconds sessionTimeout)
+{
+	if (sessionTimeout <= std::chrono::milliseconds::zero())
+	{
+		return 0;
+	}
+
+	const auto currentTime = std::chrono::steady_clock::now();
+	size_t requestedCount = 0;
+	for (const auto& [connectionId, session] : sessionLookupTable.SnapshotActiveSessions())
+	{
+		if (session != nullptr
+			&& session->HasTimedOut(currentTime, sessionTimeout)
+			&& RequestClientDisconnect(connectionId))
+		{
+			++requestedCount;
+		}
+	}
+
+	return requestedCount;
+}
+
 bool ProcessorManager::SendPacket(
 	const ProcessorIndex ioProcessorIndex,
 	const sockaddr_in& inDestAddress,
@@ -188,6 +226,41 @@ bool ProcessorManager::SendPacket(
 		EProcessorType::IO,
 		std::move(task),
 		ioProcessorIndex);
+}
+
+bool ProcessorManager::SendAuthenticatedPacket(
+	const ClientId clientId,
+	const ConnectionId connectionId,
+	const PacketType inPacketType,
+	const std::string_view inPayload)
+{
+	if (clientId == InvalidClientId
+		|| connectionId == InvalidConnectionId
+		|| inPacketType == INVALID_PACKET_TYPE)
+	{
+		return false;
+	}
+
+	const std::shared_ptr<Session> session = sessionLookupTable.Find(connectionId);
+	if (session == nullptr || session->GetClientId() != clientId)
+	{
+		return false;
+	}
+
+	std::string packetData;
+	if (not session->BuildSendPacket(
+			connectionId,
+			inPacketType,
+			inPayload,
+			packetData))
+	{
+		return false;
+	}
+
+	return SendPacket(
+		AnyProcessor,
+		session->GetRemoteAddress(),
+		packetData);
 }
 
 ConnectionId ProcessorManager::RegisterClientSession(
@@ -245,6 +318,7 @@ bool ProcessorManager::AuthenticateAndDispatchPacket(
 		return false;
 	}
 
+	session->MarkReceivedNow();
 	return clientManager.DispatchPacket(
 		session->GetClientId(),
 		authenticatedPacket.packet_type(),

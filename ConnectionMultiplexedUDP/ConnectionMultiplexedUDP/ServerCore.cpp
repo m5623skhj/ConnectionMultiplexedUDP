@@ -9,7 +9,7 @@ ServerCore::ServerCore(
 	const uint16_t ioProcessorPortBase,
 	const int inTickMillisecond
 )
-	: clientManager()
+	: clientManager(*this)
 	, processorManager(
 		clientManager,
 		inIoProcessorCount, 
@@ -125,4 +125,17 @@ bool ServerCore::RemoveClientSession(const ConnectionId connectionId)
 {
 	std::scoped_lock lock(clientSessionMutex);
 	return processorManager.RemoveClientSession(connectionId);
+}
+
+bool ServerCore::SendPacket(
+	const ClientId inClientId,
+	const ConnectionId inConnectionId,
+	const PacketType inPacketType,
+	const std::string_view inPayload)
+{
+	return processorManager.SendAuthenticatedPacket(
+		inClientId,
+		inConnectionId,
+		inPacketType,
+		inPayload);
 }

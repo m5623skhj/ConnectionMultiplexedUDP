@@ -165,6 +165,8 @@
   <ItemGroup>
     <ClInclude Include="Client.h" />
     <ClInclude Include="ClientDisconnectTask.h" />
+    <ClInclude Include="ClientPacketSender.h" />
+    <ClInclude Include="ConnectionId.h" />
     <ClInclude Include="ClientManager.h" />
     <ClInclude Include="Generated\PacketEnvelope.pb.h" />
     <ClInclude Include="HeartbeatProcessor.h" />

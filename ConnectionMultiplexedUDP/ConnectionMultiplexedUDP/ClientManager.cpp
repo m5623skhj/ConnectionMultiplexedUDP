@@ -3,6 +3,11 @@
 #include <utility>
 #include <vector>
 
+ClientManager::ClientManager(ClientPacketSender& inPacketSender)
+	: packetSender(&inPacketSender)
+{
+}
+
 ClientManager::~ClientManager()
 {
 	RemoveAllClients();
@@ -26,6 +31,7 @@ ClientId ClientManager::AddClient(std::unique_ptr<Client> inClient)
 		}
 
 		inClient->clientId = clientId;
+		inClient->packetSender = packetSender;
 	}
 
 	inClient->OnClientCreated();
@@ -211,6 +217,7 @@ void ClientManager::DestroyClient(std::unique_ptr<Client> client)
 {
 	if (client != nullptr)
 	{
+		client->packetSender = nullptr;
 		client->OnClientDestroyed();
 	}
 }

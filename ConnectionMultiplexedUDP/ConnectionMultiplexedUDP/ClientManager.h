@@ -10,6 +10,8 @@
 #include <thread>
 #include <unordered_map>
 
+class ClientPacketSender;
+
 class ClientManager
 {
 public:
@@ -30,6 +32,7 @@ private:
 
 public:
 	ClientManager() = default;
+	explicit ClientManager(ClientPacketSender& inPacketSender);
 	~ClientManager();
 
 	ClientManager(const ClientManager&) = delete;
@@ -56,4 +59,5 @@ private:
 	mutable std::mutex clientsMutex;
 	std::unordered_map<ClientId, ClientEntryPtr> clients;
 	ClientId nextClientId = 1;
+	ClientPacketSender* packetSender = nullptr;
 };

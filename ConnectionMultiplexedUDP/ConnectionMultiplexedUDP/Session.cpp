@@ -1,4 +1,5 @@
 #include "Session.h"
+#include <limits>
 #include <windows.h>
 
 Session::Session(
@@ -8,6 +9,7 @@ Session::Session(
 	: clientId(inClientId)
 	, remoteAddress(inRemoteAddress)
 	, authenticationKey(inAuthenticationKey)
+	, lastReceivedTime(std::chrono::steady_clock::now())
 {
 }
 
@@ -19,6 +21,66 @@ Session::~Session()
 ClientId Session::GetClientId() const noexcept
 {
 	return clientId;
+}
+
+void Session::MarkReceivedNow()
+{
+	std::scoped_lock lock(activityMutex);
+	lastReceivedTime = std::chrono::steady_clock::now();
+}
+
+bool Session::HasTimedOut(
+	const std::chrono::steady_clock::time_point inNow,
+	const std::chrono::milliseconds inTimeout) const
+{
+	if (inTimeout <= std::chrono::milliseconds::zero())
+	{
+		return false;
+	}
+
+	std::scoped_lock lock(activityMutex);
+	return inNow - lastReceivedTime >= inTimeout;
+}
+
+sockaddr_in Session::GetRemoteAddress() const noexcept
+{
+	return remoteAddress;
+}
+
+bool Session::BuildSendPacket(
+	const ConnectionId inConnectionId,
+	const PacketType inPacketType,
+	const std::string_view inPayload,
+	std::string& outPacketData)
+{
+	if (inConnectionId == InvalidConnectionId
+		|| inPacketType == INVALID_PACKET_TYPE)
+	{
+		outPacketData.clear();
+		return false;
+	}
+
+	std::scoped_lock lock(sendMutex);
+	const uint64_t sequence = nextSendSequence;
+	if (sequence == 0 || sequence == (std::numeric_limits<uint64_t>::max)())
+	{
+		outPacketData.clear();
+		return false;
+	}
+
+	if (not cmudp::protocol::SerializeAuthenticatedPacket(
+			inConnectionId,
+			sequence,
+			inPacketType,
+			inPayload,
+			authenticationKey,
+			outPacketData))
+	{
+		return false;
+	}
+
+	++nextSendSequence;
+	return true;
 }
 
 bool Session::VerifyPacketAuthentication(

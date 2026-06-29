@@ -1,4 +1,5 @@
 #include "LogicProcessor.h"
+#include "ClientDisconnectTask.h"
 #include "ProcessorManager.h"
 #include "Generated/PacketEnvelope.pb.h"
 #include "Protocol/PacketProtocol.h"
@@ -26,12 +27,29 @@ void LogicProcessor::StopImpl()
 void LogicProcessor::ProcessTask(std::unique_ptr<ProcessorTaskBase>&& task)
 {
 	auto* receivedPacketTask = dynamic_cast<ReceivedPacketTask*>(task.get());
-	if (receivedPacketTask == nullptr)
+	if (receivedPacketTask != nullptr)
+	{
+		ProcessReceivedPacket(*receivedPacketTask);
+		return;
+	}
+
+	auto* clientDisconnectTask = dynamic_cast<ClientDisconnectTask*>(task.get());
+	if (clientDisconnectTask != nullptr)
+	{
+		ProcessClientDisconnect(*clientDisconnectTask);
+		return;
+	}
+}
+
+void LogicProcessor::ProcessClientDisconnect(const ClientDisconnectTask& task)
+{
+	const ConnectionId connectionId = task.GetConnectionId();
+	if (connectionId == InvalidConnectionId)
 	{
 		return;
 	}
 
-	ProcessReceivedPacket(*receivedPacketTask);
+	processorManager.RemoveClientSession(connectionId);
 }
 
 void LogicProcessor::ProcessReceivedPacket(const ReceivedPacketTask& task)

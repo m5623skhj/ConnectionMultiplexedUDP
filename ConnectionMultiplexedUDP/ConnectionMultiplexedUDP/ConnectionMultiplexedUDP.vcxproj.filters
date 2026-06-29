@@ -91,6 +91,12 @@
     <ClInclude Include="Client.h">
       <Filter>소스 파일\Core\Client</Filter>
     </ClInclude>
+    <ClInclude Include="ClientPacketSender.h">
+      <Filter>소스 파일\Core\Client</Filter>
+    </ClInclude>
+    <ClInclude Include="ConnectionId.h">
+      <Filter>소스 파일\Core</Filter>
+    </ClInclude>
     <ClInclude Include="ProcessorType.h">
       <Filter>소스 파일\Core\Processor</Filter>
     </ClInclude>

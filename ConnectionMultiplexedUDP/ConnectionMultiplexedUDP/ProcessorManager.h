@@ -5,6 +5,7 @@
 #include "SessionLookupTable.h"
 #include <atomic>
 #include <array>
+#include <chrono>
 #include <cstdint>
 #include <mutex>
 #include <vector>
@@ -35,10 +36,17 @@ public:
 		EProcessorType processorType,
 		std::unique_ptr<ProcessorTaskBase>&& task,
 		uint64_t affinityKey);
+	bool RequestClientDisconnect(ConnectionId connectionId);
+	size_t RequestTimedOutSessionDisconnects(std::chrono::milliseconds sessionTimeout);
 	bool SendPacket(
 		ProcessorIndex ioProcessorIndex,
 		const sockaddr_in& inDestAddress,
 		std::string_view inPacketData);
+	bool SendAuthenticatedPacket(
+		ClientId clientId,
+		ConnectionId connectionId,
+		PacketType inPacketType,
+		std::string_view inPayload);
 	ConnectionId RegisterClientSession(
 		ClientId clientId,
 		const sockaddr_in& inRemoteAddress,

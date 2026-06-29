@@ -1,5 +1,6 @@
 #pragma once
 
+#include "ConnectionId.h"
 #include <cstdint>
 #include <string_view>
 
@@ -9,6 +10,7 @@ using PacketType = uint32_t;
 inline constexpr PacketType INVALID_PACKET_TYPE = 0;
 
 class ClientManager;
+class ClientPacketSender;
 
 class Client
 {
@@ -18,7 +20,10 @@ public:
 
 public:
 	ClientId GetClientId() const;
-	bool SendPacket();
+	bool SendPacket(
+		ConnectionId inConnectionId,
+		PacketType inPacketType,
+		std::string_view inPayload);
 
 protected:
 	virtual void OnClientCreated() noexcept = 0;
@@ -30,4 +35,5 @@ private:
 	friend class ClientManager;
 
 	ClientId clientId = InvalidClientId;
+	ClientPacketSender* packetSender = nullptr;
 };

@@ -1,4 +1,5 @@
 #pragma once
+#include "ClientPacketSender.h"
 #include "ClientManager.h"
 #include "ProcessorManager.h"
 #include "Protocol/PacketAuthentication.h"
@@ -7,7 +8,7 @@
 
 #pragma comment(lib, "ws2_32.lib")
 
-class ServerCore
+class ServerCore final : public ClientPacketSender
 {
 public:
 	ServerCore(
@@ -28,6 +29,13 @@ public:
 		const sockaddr_in& inRemoteAddress,
 		const cmudp::protocol::AuthenticationKey& inAuthenticationKey);
 	bool RemoveClientSession(ConnectionId connectionId);
+
+private:
+	bool SendPacket(
+		ClientId inClientId,
+		ConnectionId inConnectionId,
+		PacketType inPacketType,
+		std::string_view inPayload) override;
 
 private:
 	enum class EState : uint8_t

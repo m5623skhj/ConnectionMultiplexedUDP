@@ -118,6 +118,28 @@ std::shared_ptr<Session> SessionLookupTable::Find(ConnectionId connectionId) con
 	return slot.session;
 }
 
+SessionLookupTable::SessionSnapshot SessionLookupTable::SnapshotActiveSessions() const
+{
+	SessionSnapshot snapshot;
+	std::scoped_lock lock(slotsMutex);
+	snapshot.reserve(slots.size() - freeIndices.size());
+
+	for (uint32_t index = 0; index < slots.size(); ++index)
+	{
+		const SessionSlot& slot = slots[index];
+		if (slot.session == nullptr)
+		{
+			continue;
+		}
+
+		snapshot.emplace_back(
+			MakeConnectionId(index, slot.generation),
+			slot.session);
+	}
+
+	return snapshot;
+}
+
 uint32_t SessionLookupTable::GetIndex(ConnectionId connectionId)
 {
 	return static_cast<uint32_t>(connectionId);

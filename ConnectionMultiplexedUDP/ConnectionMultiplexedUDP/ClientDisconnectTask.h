@@ -1,12 +1,22 @@
 #pragma once
 #include "ProcessorTaskBase.h"
+#include "SessionLookupTable.h"
 
-class ClientDisconnectTask : public ProcessorTaskBase
+class ClientDisconnectTask final : public ProcessorTaskBase
 {
 public:
-	ClientDisconnectTask() = default;
+	explicit ClientDisconnectTask(const ConnectionId inConnectionId)
+		: connectionId(inConnectionId)
+	{
+	}
 	~ClientDisconnectTask() override = default;
 
-private:
+public:
+	ConnectionId GetConnectionId() const
+	{
+		return connectionId;
+	}
 
+private:
+	ConnectionId connectionId = InvalidConnectionId;
 };

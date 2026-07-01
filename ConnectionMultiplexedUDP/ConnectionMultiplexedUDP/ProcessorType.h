@@ -9,7 +9,7 @@ enum class EProcessorType : uint8_t
 	IO,
 	Logic,
 	TICKER,
-	HEART_BAET,
+	HEARTBEAT,
 
 	Max,
 };

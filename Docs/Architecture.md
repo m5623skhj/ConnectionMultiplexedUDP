@@ -348,4 +348,3 @@ This is an integration smoke test, not a full unit test suite.
 - Session registration is currently server API driven.
 - Ticker infrastructure exists but is not integrated into session management.
 - Runtime diagnostics are mostly `std::cout`/`std::cerr`; structured logging does not exist yet.
-- `EProcessorType::HEART_BAET` is misspelled and should be renamed in a focused cleanup if desired.

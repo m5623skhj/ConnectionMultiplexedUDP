@@ -59,7 +59,7 @@ bool ProcessorManager::Start()
 	constexpr std::array startOrder{
 		EProcessorType::Logic,
 		EProcessorType::TICKER,
-		EProcessorType::HEART_BAET,
+		EProcessorType::HEARTBEAT,
 		EProcessorType::IO };
 
 	try
@@ -369,7 +369,7 @@ void ProcessorManager::RegisterAllProcessor()
 	}
 
 	processorGroup[static_cast<size_t>(EProcessorType::TICKER)].push_back(std::make_unique<TickerProcessor>(*this, tickerProcessorIntervalMs));
-	processorGroup[static_cast<size_t>(EProcessorType::HEART_BAET)].push_back(
+	processorGroup[static_cast<size_t>(EProcessorType::HEARTBEAT)].push_back(
 		std::make_unique<HeartbeatProcessor>(
 			*this,
 			std::chrono::milliseconds(sessionTimeoutMs)));
@@ -380,7 +380,7 @@ void ProcessorManager::StopAllProcessors()
 	constexpr std::array stopOrder{
 		EProcessorType::IO,
 		EProcessorType::TICKER,
-		EProcessorType::HEART_BAET,
+		EProcessorType::HEARTBEAT,
 		EProcessorType::Logic };
 
 	for (const EProcessorType processorType : stopOrder)

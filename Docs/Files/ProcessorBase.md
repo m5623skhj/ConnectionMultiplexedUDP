@@ -18,10 +18,8 @@ flowchart LR
     EProcessorType --> IO
     EProcessorType --> Logic
     EProcessorType --> Ticker
-    EProcessorType --> Heartbeat["HEART_BAET"]
+    EProcessorType --> Heartbeat["HEARTBEAT"]
 ```
-
-`HEART_BAET` is a spelling issue in the current enum name. It is documented as-is to match the source.
 
 ## Thread Model
 
